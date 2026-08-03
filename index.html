@@ -1,0 +1,2637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Auction Tracker 360</title>
+<style>
+:root {
+  --bg:#eef1f6; --panel:#fff; --text:#0f172a; --muted:#64748b; --border:#e2e8f0;
+  --primary:#2563eb; --ok:#16a34a; --danger:#dc2626; --sec:#475569;
+  --card:#f8fafc; --stat:#e0f2fe; --overlay:rgba(15,23,42,.55);
+  --radius:14px; --shadow:0 2px 10px rgba(15,23,42,.06);
+}
+body.dark {
+  --bg:#0f172a; --panel:#1e293b; --text:#f1f5f9; --muted:#94a3b8; --border:#334155;
+  --primary:#3b82f6; --ok:#22c55e; --danger:#ef4444; --sec:#64748b;
+  --card:#0f172a; --stat:#1e3a5f; --overlay:rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:16px;line-height:1.45;padding-bottom:24px}
+body.has-tabbar{padding-bottom:84px}
+.wrap{max-width:720px;margin:0 auto;padding:12px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin:10px 0;box-shadow:var(--shadow)}
+h1,h2,h3{margin:8px 0;font-weight:800}
+.hidden{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+label{display:block;margin-top:12px;font-weight:700}
+input,select,button,textarea{margin-top:6px;padding:12px 14px;font-size:16px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);min-height:48px}
+button{cursor:pointer;background:var(--primary);color:#fff;border:none;font-weight:700;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+button:active{transform:scale(0.98)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-ok{background:var(--ok)} .btn-sec{background:var(--sec)} .btn-danger{background:var(--danger)}
+.btn-block{width:100%} .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+.home-grid{display:grid;gap:12px;margin-top:16px}
+.home-grid button{width:100%;min-height:56px;font-size:17px}
+.stats{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:10px;background:var(--stat);border-radius:12px;margin:10px 0}
+.stat{background:var(--panel);border:1px solid var(--border);padding:6px 12px;border-radius:8px;font-weight:700;font-size:14px}
+.list-btn{width:100%;text-align:left;background:var(--card);color:var(--text);border:1px solid var(--border);margin-top:8px}
+.modal{position:fixed;inset:0;background:var(--overlay);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+.modal-box{background:var(--panel);padding:22px;border-radius:16px;max-width:420px;width:100%;text-align:center}
+.tabbar{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--panel);border-top:2px solid var(--border);z-index:50}
+.tabbar button{flex:1;border-radius:0;min-height:60px;background:var(--panel);color:var(--text);border:none;border-top:3px solid transparent;font-size:13px}
+.tabbar button.active{border-top-color:var(--primary);color:var(--primary);font-weight:800}
+.progress{font-size:14px;color:var(--muted);font-weight:600}
+.player-stage{text-align:center;padding:18px 14px;border-radius:16px;border:1px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:10px 0}
+.player-name{font-size:1.7rem;font-weight:800;color:var(--primary);margin:8px 0}
+.recent-card{margin-top:12px;padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--card)}
+.recent-card .label{font-size:12px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.badge.sold{background:#dcfce7;color:#166534} .badge.unsold{background:#fee2e2;color:#991b1b}
+.timer-box{font-size:1.6rem;font-weight:800;text-align:center;margin:10px 0;padding:12px;border-radius:12px;background:var(--stat)}
+.timer-box.warn{background:#fef3c7;color:#92400e}
+.timer-box.end{background:#fee2e2;color:#991b1b}
+.bid-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.bid-grid .btn-block{grid-column:1/-1}
+.squad-grid{display:grid;gap:12px;margin-top:12px}
+.squad-card{display:block;width:100%;text-align:left;padding:16px;border-radius:14px;border:1px solid var(--border);background:var(--panel);box-shadow:var(--shadow);min-height:72px;color:var(--text);font:inherit}
+.squad-card .sc-name{font-size:1.1rem;font-weight:800;margin:0}
+.squad-card .sc-sub{font-size:13px;color:var(--muted);margin-top:6px}
+.lead-line{font-size:1.05rem;font-weight:700;text-align:center;margin:8px 0}
+ul.plain{list-style:none;padding:0;margin:0}
+ul.plain li{padding:10px 0;border-bottom:1px solid var(--border)}
+@media(min-width:768px){.player-name{font-size:2rem}}
+</style>
+</head>
+<body>
+<div id="live" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+<div id="liveSoft" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+<div id="timerBanner" class="timer-banner hidden" role="status" aria-live="assertive" aria-atomic="true"></div>
+
+<section id="screenAuth" class="wrap panel" role="region" aria-labelledby="authTitle">
+  <h1 id="authTitle">Auction Tracker 360</h1>
+  <p>Sign in with your Google account to continue.</p>
+  <button type="button" id="btnGoogle" class="btn-ok btn-block" aria-label="Sign in with Google">Sign in with Google</button>
+  <p id="authError" role="alert" style="color:var(--danger);font-weight:600;min-height:1.3em"></p>
+</section>
+
+<section id="screenHome" class="wrap panel hidden" role="region" aria-labelledby="homeTitle">
+  <h1 id="homeTitle">Auction Tracker 360</h1>
+  <p id="homeHello" style="color:var(--muted)"></p>
+  <div class="home-grid">
+    <button type="button" id="btnLive" class="btn-ok">Live auctions</button>
+    <button type="button" id="btnPast" class="btn-sec">Past auctions</button>
+    <button type="button" id="btnCreate" class="btn-ok hidden">Create a tournament</button>
+    <button type="button" id="btnMyAuctions" class="btn-sec hidden">Manage my auctions</button>
+    <button type="button" id="btnSettings" class="btn-sec">Settings</button>
+  </div>
+</section>
+
+<section id="screenList" class="wrap panel hidden" role="region" aria-labelledby="listTitle">
+  <button type="button" id="btnListBack" class="btn-sec" aria-label="Back to home">Back</button>
+  <h1 id="listTitle" tabindex="-1">Auctions</h1>
+  <div id="listBody"></div>
+</section>
+
+<section id="screenWatch" class="hidden" role="region" aria-labelledby="watchTitle">
+  <div class="wrap"><div class="panel">
+    <button type="button" id="btnWatchBack" class="btn-sec" aria-label="Back to auction list">Back</button>
+    <h1 id="watchTitle" tabindex="-1">Live auction</h1>
+    <div id="watchStats" class="stats" aria-hidden="true"></div>
+    <div id="watchPaneLive"><div id="watchPlayer"></div></div>
+    <div id="watchPaneSquads" class="hidden"></div>
+    <div id="watchPaneLists" class="hidden"></div>
+  </div></div>
+  <nav class="tabbar" role="tablist" aria-label="Viewer tabs">
+    <button type="button" role="tab" id="wTabLive" class="active" aria-selected="true">Live</button>
+    <button type="button" role="tab" id="wTabSquads" aria-selected="false">Squads</button>
+    <button type="button" role="tab" id="wTabLists" aria-selected="false">Lists</button>
+  </nav>
+</section>
+
+<section id="screenWait" class="wrap panel hidden" role="region" aria-labelledby="waitTitle">
+  <button type="button" id="btnWaitHome" class="btn-sec" aria-label="Back to home">Back to home</button>
+  <h1 id="waitTitle" tabindex="-1">Waiting room</h1>
+  <p id="waitStatus" role="status" style="font-weight:700"></p>
+  <div id="waitTeam" class="player-stage hidden" style="margin-top:12px"></div>
+  <div id="waitOwners" style="margin-top:14px"></div>
+  <p id="waitHint" style="color:var(--muted);margin-top:12px"></p>
+</section>
+
+<section id="screenWelcome" class="wrap panel hidden" role="region" aria-labelledby="welcomeTitle">
+  <h1 id="welcomeTitle" tabindex="-1">Welcome</h1>
+  <p id="welcomeText" style="font-size:1.2rem;font-weight:700"></p>
+</section>
+
+<section id="screenSettings" class="wrap panel hidden" role="region" aria-labelledby="setTitle">
+  <h1 id="setTitle">Settings</h1>
+  <h2>Account</h2>
+  <p id="setAccount" style="color:var(--muted)"></p>
+  <label style="display:flex;align-items:center;gap:10px;min-height:48px"><input type="checkbox" id="chkDark" /> Dark mode</label>
+
+  <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border)">
+    <h2>Sound effects</h2>
+    <p style="color:var(--muted);font-size:14px">Short cues at 75% volume. Place files in a sounds folder next to index.html.</p>
+    <label style="display:flex;align-items:center;gap:10px;min-height:48px">
+      <input type="checkbox" id="chkSfx" checked /> Sound effects on
+    </label>
+    <button type="button" id="btnSfxTest" class="btn-sec btn-block">Test bid sound</button>
+  </div>
+
+  <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border)">
+    <h2 id="ttsHeading">Commentary (TTS)</h2>
+    <p style="color:var(--muted);font-size:14px">When commentary is on, auction alerts use TTS only (not aria-live) to avoid double speech. When off, screen reader gets aria-live. On auction day prefer Google TTS. Eloquence users can leave commentary off.</p>
+    <label style="display:flex;align-items:center;gap:10px;min-height:48px">
+      <input type="checkbox" id="chkTts" /> Commentary on
+    </label>
+    <label for="ttsVoice">Voice</label>
+    <select id="ttsVoice" aria-label="Commentary voice"></select>
+    <div class="row" style="align-items:center">
+      <span id="ttsRateLabel" style="font-weight:700">Speech rate: 1.0</span>
+      <button type="button" id="ttsRateDown" class="btn-sec" aria-label="Decrease speech rate">−</button>
+      <button type="button" id="ttsRateUp" class="btn-sec" aria-label="Increase speech rate">+</button>
+    </div>
+    <button type="button" id="btnTtsTest" class="btn-sec btn-block">Test voice</button>
+    <h3 style="margin-top:14px">What to announce</h3>
+    <label style="display:flex;align-items:center;gap:10px;min-height:44px"><input type="checkbox" id="ttsHost" checked /> Host alerts (sold, unsold, extend, pause, end)</label>
+    <label style="display:flex;align-items:center;gap:10px;min-height:44px"><input type="checkbox" id="ttsBid" checked /> Bidding updates (lead, ultimate, quit, rejected)</label>
+    <label style="display:flex;align-items:center;gap:10px;min-height:44px"><input type="checkbox" id="ttsPlayer" checked /> Player updates (now auctioning)</label>
+    <label style="display:flex;align-items:center;gap:10px;min-height:44px"><input type="checkbox" id="ttsTimer" checked /> Timer (10 seconds and countdown)</label>
+    <label style="display:flex;align-items:center;gap:10px;min-height:44px"><input type="checkbox" id="ttsWait" checked /> Waiting room (approval, team, welcome)</label>
+  </div>
+
+  <div id="orgAdminBlock" class="hidden" style="margin-top:16px">
+    <h2>Organisers</h2>
+    <div id="organisersList"></div>
+    <h3>Pending codes</h3>
+    <div id="pendingCodes"></div>
+  </div>
+  <div id="viewerOrgBlock" style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border)">
+    <h2>Host auctions</h2>
+    <p id="orgStatus" role="status" style="font-weight:600"></p>
+    <button type="button" id="btnRequestOrg" class="btn-ok btn-block">Request permission to host auctions</button>
+    <div id="enterCodeBox" class="hidden" style="margin-top:12px">
+      <label for="orgCodeInput">Enter the 4-digit code from the administrator</label>
+      <input id="orgCodeInput" type="text" inputmode="numeric" maxlength="4" autocomplete="one-time-code" />
+      <button type="button" id="btnVerifyCode" class="btn-ok btn-block">Verify and become an organiser</button>
+    </div>
+  </div>
+  <div class="row" style="margin-top:18px">
+    <button type="button" id="btnLogout" class="btn-danger">Log out</button>
+    <button type="button" id="btnSetBack" class="btn-sec">Back to home</button>
+  </div>
+</section>
+
+<section id="screenWizard" class="wrap panel hidden" role="region" aria-labelledby="wizTitle">
+  <p class="progress" id="wizProgress">Step 1</p>
+  <h1 id="wizTitle" tabindex="-1">Create tournament</h1>
+  <div id="wizBody"></div>
+  <div class="row" id="wizNav"></div>
+</section>
+
+<section id="screenAuction" class="hidden">
+  <div class="wrap">
+    <div id="tabAuction" class="panel" role="region" aria-labelledby="aucTitle">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h1 id="aucTitle" style="margin:0">Auction</h1>
+        <button type="button" id="btnAucQuickSet" class="btn-sec" aria-label="Open commentary and sound settings">Settings</button>
+      </div>
+      <div id="aucQuickSetPanel" class="auc-settings-panel hidden" role="dialog" aria-label="Quick settings">
+        <h2 style="margin-top:0;font-size:1.1rem">Quick settings</h2>
+        <label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" id="qChkTts" /> Commentary on</label>
+        <label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" id="qChkSfx" /> Sound effects on</label>
+        <button type="button" id="btnQTestSfx" class="btn-sec btn-block">Test bid sound</button>
+        <button type="button" id="btnQFullSet" class="btn-sec btn-block">Full settings</button>
+        <button type="button" id="btnQCloseSet" class="btn-ok btn-block">Close</button>
+      </div>
+      <div id="aucStats" class="stats" aria-hidden="true"></div>
+      <div id="aucPlayer"></div>
+      <div class="row">
+        <button type="button" id="btnEndAuction" class="btn-sec">End this auction</button>
+        <button type="button" id="btnHomeAuc" class="btn-sec" aria-label="Back to home">Back to home</button>
+      </div>
+    </div>
+    <div id="tabSquads" class="panel hidden" role="region" aria-labelledby="sqTitle">
+      <h1 id="sqTitle">Squads</h1>
+      <div id="sqBody"></div>
+    </div>
+    <div id="tabTools" class="panel hidden" role="region" aria-labelledby="toolsTitle">
+      <h1 id="toolsTitle">Tools</h1>
+      <div class="row">
+        <button type="button" class="btn-sec" data-list="sold">Sold players</button>
+        <button type="button" class="btn-sec" data-list="unsold">Unsold players</button>
+        <button type="button" class="btn-sec" data-list="remaining">Upcoming players</button>
+      </div>
+      <div id="toolsList" style="margin-top:12px"></div>
+    </div>
+  </div>
+  <nav class="tabbar" role="tablist" aria-label="Auction tabs">
+    <button type="button" role="tab" id="tabBtnAuction" class="active" aria-selected="true">Auction</button>
+    <button type="button" role="tab" id="tabBtnSquads" aria-selected="false">Squads</button>
+    <button type="button" role="tab" id="tabBtnTools" aria-selected="false">Tools</button>
+  </nav>
+</section>
+
+<div id="confirmModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="cTitle">
+  <div class="modal-box">
+    <h2 id="cTitle">Confirm</h2>
+    <p id="cText"></p>
+    <div class="row" style="justify-content:center">
+      <button type="button" id="cYes" class="btn-ok">Yes</button>
+      <button type="button" id="cNo" class="btn-sec">No</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBGaYN7aDiO10yOUOr2deRamH5ed1Jon30",
+  authDomain: "auctiontracker360.firebaseapp.com",
+  projectId: "auctiontracker360",
+  storageBucket: "auctiontracker360.firebasestorage.app",
+  messagingSenderId: "1035286573847",
+  appId: "1:1035286573847:web:3cc9d7df3617f6fb787d52",
+  measurementId: "G-MTYE09EDSY"
+};
+const SUPER_ADMIN_EMAILS = ["maheshdhoni7633@gmail.com"];
+const ADMIN_NOTIFY_EMAIL = "maheshdhoni7633@gmail.com";
+
+let auth, db, user=null, profile=null, profileUnsub=null;
+let T=null, auctionId=null, step=0, wiz={};
+let helperMode=false, ownerMode=false, myTeamId=null;
+let joinAuctionId=null, watchUnsub=null, auctionLiveUnsub=null, waitUnsub=null, timerInterval=null, toolsPage=0, toolsKind=null;
+let activeCols={serial:true,name:true,gamerId:true,state:false};
+let parsedRows=[], headers=[], squadView=null, pendingFn=null;
+
+const $=id=>document.getElementById(id);
+function announce(m, soft){
+  // Live regions only — do NOT move focus
+  const el = soft ? $('liveSoft') : $('live');
+  if(!el) return;
+  el.textContent='';
+  setTimeout(()=>{ el.textContent=m || ''; }, 50);
+}
+
+/** If commentary TTS on → speak only (no aria-live). If off → aria-live only for screen readers. */
+function sayEvent(msg, category, soft){
+  if(!msg) return;
+  const ttsOn = typeof ttsPref!=='undefined' && ttsPref.on;
+  if(ttsOn){
+    try{ if(typeof ttsSpeak==='function') ttsSpeak(msg, category); }catch(e){}
+  } else {
+    announce(msg, !!soft);
+  }
+}
+
+
+/* ===== Commentary TTS (optional, does not replace aria-live) ===== */
+const TTS_DEFAULTS = {
+  on: false,
+  rate: 1,
+  voiceURI: '',
+  host: true,
+  bid: true,
+  player: true,
+  timer: true,
+  wait: true
+};
+let ttsPref = Object.assign({}, TTS_DEFAULTS);
+try {
+  const raw = localStorage.getItem('at_tts');
+  if (raw) ttsPref = Object.assign({}, TTS_DEFAULTS, JSON.parse(raw));
+} catch (e) {}
+
+function saveTtsPref() {
+  try { localStorage.setItem('at_tts', JSON.stringify(ttsPref)); } catch (e) {}
+}
+
+function ttsSupported() {
+  return typeof window !== 'undefined' && 'speechSynthesis' in window;
+}
+
+function ttsPickVoice() {
+  if (!ttsSupported()) return null;
+  const list = speechSynthesis.getVoices() || [];
+  if (!list.length) return null;
+  if (ttsPref.voiceURI) {
+    const found = list.find(v => v.voiceURI === ttsPref.voiceURI);
+    if (found) return found;
+  }
+  // Prefer Google / Microsoft English UK/US
+  const score = (v) => {
+    let s = 0;
+    const n = (v.name || '') + ' ' + (v.lang || '');
+    if (/en-GB/i.test(v.lang)) s += 5;
+    if (/en-US/i.test(v.lang)) s += 4;
+    if (/en/i.test(v.lang)) s += 2;
+    if (/Google/i.test(n)) s += 3;
+    if (/Microsoft/i.test(n)) s += 3;
+    if (/Male/i.test(n)) s += 1;
+    if (/UK|British/i.test(n)) s += 2;
+    return s;
+  };
+  return list.slice().sort((a, b) => score(b) - score(a))[0] || list[0];
+}
+
+function ttsFillVoiceSelect() {
+  const sel = $('ttsVoice');
+  if (!sel || !ttsSupported()) return;
+  const list = speechSynthesis.getVoices() || [];
+  const prev = ttsPref.voiceURI || sel.value;
+  sel.innerHTML = '';
+  if (!list.length) {
+    const o = document.createElement('option');
+    o.value = '';
+    o.textContent = 'No voices found — use Chrome';
+    sel.appendChild(o);
+    return;
+  }
+  // English first
+  const ordered = list.slice().sort((a, b) => {
+    const ae = /^en/i.test(a.lang) ? 0 : 1;
+    const be = /^en/i.test(b.lang) ? 0 : 1;
+    if (ae !== be) return ae - be;
+    return (a.name || '').localeCompare(b.name || '');
+  });
+  ordered.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v.voiceURI;
+    o.textContent = (v.name || 'Voice') + ' (' + (v.lang || '') + ')';
+    sel.appendChild(o);
+  });
+  if (prev && ordered.some(v => v.voiceURI === prev)) sel.value = prev;
+  else {
+    const pref = ttsPickVoice();
+    if (pref) {
+      sel.value = pref.voiceURI;
+      ttsPref.voiceURI = pref.voiceURI;
+    }
+  }
+}
+
+function ttsSpeak(text, category) {
+  if (!text || !ttsPref.on || !ttsSupported()) return;
+  if (category) {
+    if (ttsPref[category] === false) return;
+  }
+  try {
+    // Android: voices may load late — try resume
+    try { speechSynthesis.resume(); } catch (e1) {}
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(String(text));
+    u.rate = Math.min(1.4, Math.max(0.7, Number(ttsPref.rate) || 1));
+    u.pitch = 1;
+    u.volume = 1;
+    const voice = ttsPickVoice();
+    if (voice) u.voice = voice;
+    speechSynthesis.speak(u);
+  } catch (e) {
+    console.warn('TTS', e);
+  }
+}
+
+function ttsStop() {
+  try { if (ttsSupported()) speechSynthesis.cancel(); } catch (e) {}
+}
+
+
+/* ===== Sound effects (75% volume, optional) ===== */
+const SFX_FILES = {
+  welcome: 'sounds/welcome.mp3',
+  bid: 'sounds/bid.mp3',
+  ultimate: 'sounds/ultimate.mp3',
+  sold: 'sounds/sold.mp3',
+  unsold: 'sounds/unsold.mp3',
+  timer: 'sounds/timer.mp3'
+};
+let sfxOn = true;
+let sfxVolume = 0.75;
+let sfxUnlocked = false;
+const sfxCache = {};
+try {
+  const s = localStorage.getItem('at_sfx');
+  if (s) {
+    const o = JSON.parse(s);
+    if (typeof o.on === 'boolean') sfxOn = o.on;
+    if (typeof o.volume === 'number') sfxVolume = o.volume;
+  }
+} catch (e) {}
+
+function saveSfxPref() {
+  try { localStorage.setItem('at_sfx', JSON.stringify({ on: sfxOn, volume: sfxVolume })); } catch (e) {}
+}
+
+function unlockSfx() {
+  if (sfxUnlocked) return;
+  sfxUnlocked = true;
+  // Warm-up silent play after user gesture
+  try {
+    const a = new Audio(SFX_FILES.bid);
+    a.volume = 0;
+    a.play().then(() => { a.pause(); }).catch(() => {});
+  } catch (e) {}
+}
+
+function playSfx(name) {
+  if (!sfxOn || !name || !SFX_FILES[name]) return;
+  try {
+    unlockSfx();
+    let a = sfxCache[name];
+    if (!a) {
+      a = new Audio(SFX_FILES[name]);
+      sfxCache[name] = a;
+    }
+    a.pause();
+    a.currentTime = 0;
+    a.volume = Math.min(1, Math.max(0, sfxVolume));
+    const p = a.play();
+    if (p && p.catch) p.catch(() => {});
+  } catch (e) {
+    console.warn('SFX', name, e);
+  }
+}
+
+function wireSfxSettings() {
+  const chk = $('chkSfx');
+  if (!chk) return;
+  chk.checked = !!sfxOn;
+  chk.onchange = () => {
+    sfxOn = chk.checked;
+    saveSfxPref();
+    if (sfxOn) { unlockSfx(); playSfx('bid'); }
+  };
+  const t = $('btnSfxTest');
+  if (t) t.onclick = () => { unlockSfx(); sfxOn = true; chk.checked = true; saveSfxPref(); playSfx('bid'); };
+}
+
+function wireTtsSettings() {
+  const chk = $('chkTts');
+  if (!chk) return;
+  chk.checked = !!ttsPref.on;
+  $('ttsHost').checked = ttsPref.host !== false;
+  $('ttsBid').checked = ttsPref.bid !== false;
+  $('ttsPlayer').checked = ttsPref.player !== false;
+  $('ttsTimer').checked = ttsPref.timer !== false;
+  $('ttsWait').checked = ttsPref.wait !== false;
+  const rate = Number(ttsPref.rate) || 1;
+  ttsPref.rate = rate;
+  $('ttsRateLabel').textContent = 'Speech rate: ' + rate.toFixed(1);
+  ttsFillVoiceSelect();
+
+  chk.onchange = () => {
+    ttsPref.on = chk.checked;
+    saveTtsPref();
+    if (ttsPref.on) {
+      ttsFillVoiceSelect();
+      sayEvent('Commentary on', null);
+    } else ttsStop();
+  };
+  $('ttsVoice').onchange = () => {
+    ttsPref.voiceURI = $('ttsVoice').value;
+    saveTtsPref();
+  };
+  function bumpRate(d) {
+    let r = Math.round(((Number(ttsPref.rate) || 1) + d) * 10) / 10;
+    r = Math.min(1.4, Math.max(0.7, r));
+    ttsPref.rate = r;
+    $('ttsRateLabel').textContent = 'Speech rate: ' + r.toFixed(1);
+    saveTtsPref();
+  }
+  $('ttsRateDown').onclick = () => bumpRate(-0.1);
+  $('ttsRateUp').onclick = () => bumpRate(0.1);
+  $('btnTtsTest').onclick = () => {
+    ttsPref.on = true;
+    chk.checked = true;
+    saveTtsPref();
+    ttsSpeak('Test voice. Mumbai Indians leads at one hundred fifty.', null);
+  };
+  ['ttsHost','ttsBid','ttsPlayer','ttsTimer','ttsWait'].forEach(id => {
+    $(id).onchange = () => {
+      const key = id.replace('tts', '').toLowerCase();
+      // map ttsHost -> host
+      const map = { host: 'host', bid: 'bid', player: 'player', timer: 'timer', wait: 'wait' };
+      const k = id === 'ttsHost' ? 'host' : id === 'ttsBid' ? 'bid' : id === 'ttsPlayer' ? 'player' : id === 'ttsTimer' ? 'timer' : 'wait';
+      ttsPref[k] = $(id).checked;
+      saveTtsPref();
+    };
+  });
+  if (ttsSupported()) {
+    speechSynthesis.onvoiceschanged = ttsFillVoiceSelect;
+  }
+}
+
+function focusElOnce(el, key){
+  // Focus only when key changes (e.g. new player), not on every live tick
+  if(!el) return;
+  if(key!=null && window._focusKey===key) return;
+  if(key!=null) window._focusKey=key;
+  focusEl(el);
+}
+
+function focusEl(el){
+  if(!el) return;
+  try{
+    if(!el.hasAttribute('tabindex') && el.tagName!=='BUTTON' && el.tagName!=='INPUT' && el.tagName!=='SELECT' && el.tagName!=='A'){
+      el.setAttribute('tabindex','-1');
+    }
+    // Keep focus inside the document body content
+    el.focus({ preventScroll: false });
+    // Soft scroll into view within page only
+    if(typeof el.scrollIntoView==='function'){
+      el.scrollIntoView({ block:'nearest', inline:'nearest', behavior:'smooth' });
+    }
+  }catch(e){
+    try{ el.focus(); }catch(e2){}
+  }
+}
+function friendlyError(e){
+  const raw = (e && (e.message||e.code||String(e))) || 'Something went wrong';
+  if(/permission|insufficient/i.test(raw)) return 'Permission denied. Sign in again or ask the host to assign your team.';
+  if(/network|unavailable|offline/i.test(raw)) return 'Network problem. Check your connection and try again.';
+  if(/not-found|missing/i.test(raw)) return 'Auction not found or was removed.';
+  if(/FirebaseError|firebase/i.test(raw)){
+    // Strip long Firebase prefixes for screen readers
+    const m = raw.replace(/^Firebase:\s*/i,'').replace(/\(auth\/[\w-]+\)/g,'').replace(/\(firestore\/[\w-]+\)/g,'').trim();
+    return m || 'Request failed. Try again.';
+  }
+  return raw.length>160 ? raw.slice(0,160)+'…' : raw;
+}
+function safeAlert(e){
+  alert(friendlyError(e));
+}
+
+function showScreen(id){
+  ['screenAuth','screenHome','screenList','screenWait','screenWelcome','screenWatch','screenSettings','screenWizard','screenAuction']
+    .forEach(s=>$(s).classList.toggle('hidden', s!==id));
+  document.body.classList.toggle('has-tabbar', id==='screenAuction' || id==='screenWatch');
+  if(id!=='screenAuction' && id!=='screenWatch') stopTimer();
+}
+function isSuperAdmin(){
+  const em=(user&&user.email||'').toLowerCase();
+  return SUPER_ADMIN_EMAILS.includes(em) || !!(profile&&profile.superAdmin);
+}
+function canCreate(){
+  if(isSuperAdmin()) return true;
+  if(!profile || profile.orgPaused) return false;
+  return !!profile.isOrganiser;
+}
+function isVirtual(){ return T && T.mode==='virtual'; }
+
+try{
+  firebase.initializeApp(firebaseConfig);
+  auth=firebase.auth();
+  db=firebase.firestore();
+}catch(e){ console.error(e); }
+
+if(localStorage.getItem('at_theme')==='dark') document.body.classList.add('dark');
+document.addEventListener('click', function sfxOnce(){ unlockSfx(); document.removeEventListener('click', sfxOnce); }, { once: true });
+
+$('chkDark').checked=document.body.classList.contains('dark');
+$('chkDark').onchange=()=>{
+  const on=$('chkDark').checked;
+  document.body.classList.toggle('dark',on);
+  localStorage.setItem('at_theme', on?'dark':'light');
+};
+
+function ask(title,msg,onYes){
+  $('cTitle').textContent=title; $('cText').textContent=msg; pendingFn=onYes;
+  $('confirmModal').classList.remove('hidden'); focusEl($('cYes'));
+}
+$('cYes').onclick=()=>{ $('confirmModal').classList.add('hidden'); const f=pendingFn; pendingFn=null; if(f)f(); };
+$('cNo').onclick=()=>{ $('confirmModal').classList.add('hidden'); pendingFn=null; };
+
+/* Auth */
+$('btnGoogle').onclick=async()=>{
+  $('authError').textContent='';
+  try{ await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+  catch(e){
+    let msg=e.message||'Sign in failed';
+    if(e.code==='auth/popup-blocked') msg='Popup blocked. Allow popups and try again.';
+    if(e.code==='auth/unauthorized-domain') msg='Add this domain under Firebase Authentication authorized domains.';
+    $('authError').textContent=msg;
+  }
+};
+
+async function loadProfile(u){
+  const ref=db.collection('users').doc(u.uid);
+  let snap; try{ snap=await ref.get(); }catch(e){ return {email:u.email,isOrganiser:false}; }
+  const superA=SUPER_ADMIN_EMAILS.includes((u.email||'').toLowerCase());
+  if(!snap.exists){
+    const p={email:u.email||'',displayName:u.displayName||'',isOrganiser:superA,superAdmin:superA,orgPaused:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
+    try{ await ref.set(p); }catch(e){}
+    return p;
+  }
+  const data=snap.data()||{};
+  if(superA&&(!data.superAdmin||!data.isOrganiser)){
+    try{ await ref.set({superAdmin:true,isOrganiser:true,orgPaused:false},{merge:true}); }catch(e){}
+    data.superAdmin=true; data.isOrganiser=true; data.orgPaused=false;
+  }
+  return data;
+}
+async function refreshProfile(){ if(user) profile=await loadProfile(user); return profile; }
+
+function enterHome(){
+  try{ ttsStop(); }catch(e){}
+  stopAuctionLive();
+  stopWait();
+  stopTimer();
+  stopAssignLive();
+  try{ stopPhysHelperLive(); }catch(e){}
+  if(watchUnsub){ try{watchUnsub();}catch(e){} watchUnsub=null; }
+  helperMode=false; ownerMode=false; myTeamId=null;
+  // Keep auctionId only if needed; clear live T to avoid ghost UI
+  T=null;
+  window._lastBidKey=null;
+  window._countdownSec=null;
+  const ban=$('timerBanner'); if(ban){ ban.classList.add('hidden'); ban.textContent=''; }
+  showScreen('screenHome');
+  $('homeHello').textContent='Signed in as '+(user.displayName||user.email||'');
+  const allow=canCreate();
+  $('btnCreate').classList.toggle('hidden',!allow);
+  $('btnMyAuctions').classList.toggle('hidden',!allow);
+  focusEl($('homeTitle'));
+}
+
+auth.onAuthStateChanged(async u=>{
+  if(profileUnsub){ try{profileUnsub();}catch(e){} profileUnsub=null; }
+  if(!u){ user=null; profile=null; showScreen('screenAuth'); focusEl($('authTitle')); return; }
+  user=u; profile=await loadProfile(u); enterHome();
+  if(joinAuctionId) await handleJoinInvite();
+  try{
+    profileUnsub=db.collection('users').doc(u.uid).onSnapshot(snap=>{
+      if(!snap.exists) return;
+      const prev=canCreate();
+      profile=snap.data()||profile;
+      if(SUPER_ADMIN_EMAILS.includes((u.email||'').toLowerCase())){ profile.superAdmin=true; profile.isOrganiser=true; profile.orgPaused=false; }
+      if(prev && !canCreate()){
+        alert('You are no longer an organiser.\n\nRequest permission again to host an auction, or continue as a viewer.');
+        T=null; auctionId=null; enterHome();
+      } else if(!$('screenHome').classList.contains('hidden')){
+        $('btnCreate').classList.toggle('hidden', !canCreate());
+        $('btnMyAuctions').classList.toggle('hidden', !canCreate());
+      }
+    });
+  }catch(e){}
+});
+
+try{
+  const q=new URLSearchParams(location.search);
+  joinAuctionId=q.get('join')||null;
+}catch(e){ joinAuctionId=null; }
+
+async function handleJoinInvite(){
+  if(!joinAuctionId||!user||!db) return;
+  const id = joinAuctionId;
+  try{
+    const ref=db.collection('auctions').doc(id);
+    const snap=await ref.get();
+    if(!snap.exists){ alert('Invite link is invalid or the auction was not found.'); return; }
+    const data=snap.data();
+    if(data.status==='ended'){ alert('This auction has ended.'); return; }
+    if(data.ownerId===user.uid){ alert('You are the host of this auction.'); return; }
+
+    if(data.mode==='virtual'){
+      const pending=data.pendingOwners||[];
+      const owners=data.owners||[];
+      const already = pending.some(p=>p.uid===user.uid) || owners.some(o=>o.uid===user.uid);
+      if(!already){
+        pending.push({uid:user.uid,email:user.email||'',displayName:user.displayName||'',at:Date.now()});
+        await ref.set({pendingOwners:pending},{merge:true});
+      }
+      try{ history.replaceState({},'',location.pathname);}catch(e){}
+      joinAuctionId=null;
+      enterWaitingRoom(id);
+      return;
+    }
+
+    // Physical helper join
+    const pending=data.pendingCoOrganisers||[];
+    if(!pending.some(p=>p.uid===user.uid)){
+      pending.push({uid:user.uid,email:user.email||'',displayName:user.displayName||'',at:Date.now()});
+      await ref.set({pendingCoOrganisers:pending},{merge:true});
+    }
+    try{ history.replaceState({},'',location.pathname);}catch(e){}
+    joinAuctionId=null;
+    enterWaitingRoom(id);
+  }catch(e){ safeAlert(e); }
+}
+
+function stopWait(){
+  if(waitUnsub){ try{waitUnsub();}catch(e){} waitUnsub=null; }
+}
+
+function enterWaitingRoom(id){
+  stopWait();
+  auctionId = id;
+  showScreen('screenWait');
+  $('waitStatus').textContent = 'Connecting…';
+  $('waitTeam').classList.add('hidden');
+  $('waitOwners').innerHTML = '';
+  $('waitHint').textContent = 'Stay on this screen. You will move automatically when the host starts the auction.';
+  focusEl($('waitTitle'));
+  announce('Waiting room. Waiting for host approval.');
+
+  waitUnsub = db.collection('auctions').doc(id).onSnapshot(doc=>{
+    if(!doc.exists){
+      $('waitStatus').textContent = 'This auction is no longer available.';
+      return;
+    }
+    const data = doc.data();
+    renderWaitingRoom(id, data);
+  }, err=>{
+    $('waitStatus').textContent = 'Connection error: '+(err.message||err);
+  });
+}
+
+function renderWaitingRoom(id, data){
+  const title = data.title || 'Auction';
+  const owners = data.owners || [];
+  const pending = data.pendingOwners || [];
+  const meOwner = owners.find(o=>o.uid===user.uid);
+  const mePending = pending.some(p=>p.uid===user.uid);
+
+  // Auction already live and I have a team → welcome then enter
+  if(data.status==='live' && meOwner && meOwner.teamId){
+    stopWait();
+    showWelcomeThenAuction(id, data, meOwner);
+    return;
+  }
+
+  if(meOwner && meOwner.teamId){
+    $('waitStatus').textContent = 'You are approved';
+    $('waitHint').textContent = '';
+    $('waitTeam').classList.remove('hidden');
+    $('waitTeam').innerHTML = '<p style="margin:0;font-size:13px;font-weight:700;color:var(--muted)">YOUR TEAM</p>'+
+      '<p class="player-name" style="font-size:1.4rem" id="waitTeamName" tabindex="-1">'+(meOwner.teamName||meOwner.teamId)+'</p>'+
+      '<p style="color:var(--muted)">Waiting for the host to begin the auction.</p>';
+    focusEl($('waitTeamName'));
+    announce('Assigned to team '+(meOwner.teamName||'')+'. Waiting for auction to begin.');
+    if(window._ttsAssignKey !== (meOwner.teamId||'')){
+      window._ttsAssignKey = meOwner.teamId||'';
+      sayEvent('You are assigned to '+(meOwner.teamName||'your team')+'. Waiting for the host to begin the auction.', 'wait');
+    }
+  } else if(mePending || data.mode==='virtual'){
+    $('waitStatus').textContent = 'Waiting for host approval';
+    $('waitTeam').classList.add('hidden');
+    $('waitHint').textContent = 'Your join request was sent. The host will assign your team. Stay on this screen.';
+    if(window._ttsWaitKey !== 'pending'){
+      window._ttsWaitKey = 'pending';
+      sayEvent('Waiting for host approval and team assignment.', 'wait');
+    }
+  } else {
+    $('waitStatus').textContent = 'Waiting for the host…';
+    $('waitHint').textContent = '';
+  }
+
+  // List of owners and assignments (visible to people in the room)
+  let h = '<h2 style="font-size:1rem">Team owners</h2>';
+  if(!owners.length && !pending.length){
+    h += '<p style="color:var(--muted)">No other owners yet.</p>';
+  }
+  owners.forEach(o=>{
+    h += '<div class="panel" style="margin-top:8px;padding:12px">'+
+      '<strong>'+(o.displayName||o.email||'Owner')+'</strong><br>'+
+      '<span style="color:var(--muted)">'+(o.email||'')+'</span><br>'+
+      (o.teamId ? ('<span class="badge sold">Team: '+(o.teamName||o.teamId)+'</span>') : '<span class="badge">Not assigned</span>')+
+      '</div>';
+  });
+  pending.forEach(p=>{
+    if(owners.some(o=>o.uid===p.uid)) return;
+    h += '<div class="panel" style="margin-top:8px;padding:12px">'+
+      '<strong>'+(p.displayName||p.email||'Owner')+'</strong><br>'+
+      '<span style="color:var(--muted)">'+(p.email||'')+'</span><br>'+
+      '<span class="badge">Waiting for team assignment</span></div>';
+  });
+  $('waitOwners').innerHTML = h;
+}
+
+function showWelcomeThenAuction(id, data, meOwner){
+  showScreen('screenWelcome');
+  const msg = 'Welcome to '+(data.title||'the auction')+
+    (meOwner && meOwner.teamName ? ('. You are bidding for '+meOwner.teamName) : '')+'.';
+  $('welcomeText').textContent = msg;
+  focusEl($('welcomeTitle'));
+  announce(msg);
+  sayEvent(msg, 'wait');
+  playSfx('welcome');
+  setTimeout(()=>{
+    resumeAuction(id, data);
+  }, 3000);
+}
+
+$('btnWaitHome').onclick=()=>{ stopWait(); enterHome(); };
+
+$('btnLogout').onclick=()=>auth.signOut();
+$('btnSetBack').onclick=()=>enterHome();
+$('btnSettings').onclick=async()=>{
+  showScreen('screenSettings');
+  try{ wireTtsSettings(); wireSfxSettings(); }catch(e){}
+  $('setAccount').textContent=(user.displayName||'')+' · '+(user.email||'');
+  if(canCreate()){
+    $('orgStatus').textContent='You can create and run tournaments.';
+    $('btnRequestOrg').classList.add('hidden');
+    $('enterCodeBox').classList.add('hidden');
+  } else {
+    $('orgStatus').textContent='You can watch live and past auctions. Request permission to host.';
+    $('btnRequestOrg').classList.remove('hidden');
+    $('enterCodeBox').classList.remove('hidden');
+  }
+  $('orgAdminBlock').classList.toggle('hidden', !isSuperAdmin());
+  if(isSuperAdmin()) await refreshAdminOrgLists();
+  focusEl($('setTitle'));
+};
+
+function fourDigit(){ return String(Math.floor(1000+Math.random()*9000)); }
+$('btnRequestOrg').onclick=async()=>{
+  try{
+    const existing=await db.collection('organiserRequests').where('uid','==',user.uid).where('status','==','pending').limit(1).get();
+    let code;
+    if(!existing.empty) code=existing.docs[0].data().code;
+    else {
+      code=fourDigit();
+      await db.collection('organiserRequests').add({uid:user.uid,email:user.email||'',displayName:user.displayName||'',code,status:'pending',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+      const sub=encodeURIComponent('Auction organiser request code');
+      const body=encodeURIComponent('Name: '+(user.displayName||'')+'\nEmail: '+(user.email||'')+'\nCode: '+code);
+      window.open('mailto:'+ADMIN_NOTIFY_EMAIL+'?subject='+sub+'&body='+body,'_blank');
+    }
+    alert('Request created. Code for admin: '+code);
+    $('enterCodeBox').classList.remove('hidden');
+    focusEl($('orgCodeInput'));
+  }catch(e){ safeAlert(e); }
+};
+$('btnVerifyCode').onclick=async()=>{
+  const code=String($('orgCodeInput').value||'').replace(/\D/g,'').trim();
+  if(code.length!==4){ alert('Enter the 4-digit code'); return; }
+  try{
+    const q=await db.collection('organiserRequests').where('code','==',code).where('status','==','pending').limit(5).get();
+    if(q.empty){ alert('Invalid or already used code'); return; }
+    let doc=null;
+    q.forEach(d=>{ if(d.data().uid===user.uid || (d.data().email||'').toLowerCase()===(user.email||'').toLowerCase()) doc=d; });
+    if(!doc){ alert('This code is not for your account.'); return; }
+    await doc.ref.update({status:'approved'});
+    await db.collection('users').doc(user.uid).set({isOrganiser:true,orgPaused:false},{merge:true});
+    profile=await loadProfile(user);
+    alert('You are now an organiser.');
+    enterHome();
+  }catch(e){ safeAlert(e); }
+};
+
+async function refreshAdminOrgLists(){
+  const oBox=$('organisersList'), pBox=$('pendingCodes');
+  oBox.innerHTML='Loading…'; pBox.innerHTML='Loading…';
+  try{
+    const users=await db.collection('users').where('isOrganiser','==',true).get();
+    oBox.innerHTML='';
+    users.forEach(doc=>{
+      const d=doc.data();
+      const div=document.createElement('div'); div.className='panel'; div.style.marginTop='8px';
+      div.innerHTML='<strong>'+(d.displayName||d.email)+'</strong><br><span style="color:var(--muted)">'+(d.email||'')+(d.orgPaused?' · Paused':'')+'</span>';
+      const row=document.createElement('div'); row.className='row';
+      const pause=document.createElement('button'); pause.type='button'; pause.className='btn-sec';
+      pause.textContent=d.orgPaused?'Resume permission':'Pause permission';
+      pause.onclick=async()=>{ await doc.ref.set({orgPaused:!d.orgPaused},{merge:true}); refreshAdminOrgLists(); };
+      const rem=document.createElement('button'); rem.type='button'; rem.className='btn-danger'; rem.textContent='Remove permission';
+      rem.onclick=()=>ask('Remove organiser?','Remove access for '+(d.email||'')+'?', async()=>{ await doc.ref.set({isOrganiser:false,orgPaused:false},{merge:true}); refreshAdminOrgLists(); });
+      row.appendChild(pause); row.appendChild(rem); div.appendChild(row); oBox.appendChild(div);
+    });
+    const pend=await db.collection('organiserRequests').where('status','==','pending').get();
+    pBox.innerHTML=pend.empty?'<p style="color:var(--muted)">No pending requests.</p>':'';
+    pend.forEach(doc=>{
+      const d=doc.data();
+      const div=document.createElement('div'); div.className='panel';
+      div.innerHTML='<strong>'+(d.displayName||d.email)+'</strong><br>'+(d.email||'')+'<p style="font-size:1.6rem;font-weight:800;letter-spacing:.15em">'+(d.code||'')+'</p>';
+      pBox.appendChild(div);
+    });
+  }catch(e){ oBox.innerHTML=e.message||'Error'; }
+}
+
+/* Lists */
+$('btnLive').onclick=()=>openAuctionList('live');
+$('btnPast').onclick=()=>openAuctionList('ended');
+$('btnListBack').onclick=()=>enterHome();
+
+async function openAuctionList(kind){
+  showScreen('screenList');
+  $('listTitle').textContent=kind==='live'?'Live auctions':'Past auctions';
+  focusEl($('listTitle'));
+  const body=$('listBody'); body.innerHTML='<p>Loading…</p>';
+  try{
+    const snap=await db.collection('auctions').where('status','==',kind).limit(40).get();
+    const items=[]; snap.forEach(doc=>items.push({id:doc.id,...doc.data()}));
+    items.sort((a,b)=>{
+      const ta=(a.updatedAt&&a.updatedAt.toMillis)?a.updatedAt.toMillis():(a.updatedAt||0);
+      const tb=(b.updatedAt&&b.updatedAt.toMillis)?b.updatedAt.toMillis():(b.updatedAt||0);
+      if(tb!==ta) return tb-ta; // latest first
+      return String(b.title||'').localeCompare(String(a.title||''));
+    });
+    if(!items.length){ body.innerHTML='<p>No '+(kind==='live'?'live':'past')+' auctions right now.</p>'; return; }
+    body.innerHTML='';
+    items.forEach(it=>{
+      const btn=document.createElement('button'); btn.type='button'; btn.className='list-btn';
+      const left=(it.players||[]).filter(p=>!p.sold&&!p.unsold).length;
+      const mode=it.mode==='virtual'?'Virtual · ':'';
+      btn.innerHTML='<strong>'+mode+(it.title||'Auction')+'</strong><br><span style="font-size:13px;color:var(--muted)">Left: '+left+' · '+(it.ownerName||it.ownerEmail||'')+'</span>';
+      btn.onclick=()=>openAuction(it.id);
+      body.appendChild(btn);
+    });
+  }catch(e){ body.innerHTML='<p>'+(e.message||e)+'</p>'; }
+}
+
+function stopAuctionLive(){ if(auctionLiveUnsub){ try{auctionLiveUnsub();}catch(e){} auctionLiveUnsub=null; } stopPresence(); }
+function stopTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } }
+
+function applyAuctionData(data){
+  if(data.presence) window._lastPresence=data.presence;
+  T={
+    title:data.title, mode:data.mode||'physical', status:data.status||'live',
+    teams:data.teams||[], players:data.players||[], meta:data.meta||{currentIndex:0},
+    activeColumns:data.activeColumns||activeCols, rules:data.rules||null,
+    bid:data.bid||null, owners:data.owners||[], pendingOwners:data.pendingOwners||[],
+    pendingCoOrganisers:data.pendingCoOrganisers||[], coOrganiserIds:data.coOrganiserIds||[],
+    ownerId:data.ownerId, meetLink:data.meetLink||'', presence:data.presence||{}, paused:!!data.paused, alertRules:data.alertRules||null
+  };
+  helperMode=!!(user && data.ownerId!==user.uid && (data.coOrganiserIds||[]).includes(user.uid));
+  const ow=(data.owners||[]).find(o=>o.uid===user.uid);
+  ownerMode=!!(user && data.mode==='virtual' && ow && ow.teamId);
+  myTeamId=ow?ow.teamId:null;
+  try{
+    const onAuction=$('screenAuction') && !$('screenAuction').classList.contains('hidden');
+    const onWatch=$('screenWatch') && !$('screenWatch').classList.contains('hidden');
+    const onWait=$('screenWait') && !$('screenWait').classList.contains('hidden');
+    const onLiveScreen=onAuction||onWatch||onWait;
+
+    // Player change (host, owner, viewer)
+    if(onLiveScreen && data.players){
+      let idx=(data.meta&&data.meta.currentIndex)||0;
+      const pl=data.players||[];
+      while(idx<pl.length&&(pl[idx].sold||pl[idx].unsold)) idx++;
+      if(idx<pl.length){
+        const pkey='pl|'+idx+'|'+(pl[idx].name||'');
+        if(window._sayPlayerKey!==pkey){
+          window._sayPlayerKey=pkey;
+          sayEvent('Now auctioning '+(pl[idx].name||'player')+', number '+(idx+1)+' of '+pl.length, 'player');
+        }
+      }
+    }
+
+    // Bid / lead change
+    if(data.mode==='virtual' && data.bid && data.bid.leaderTeamName!=null && data.bid.price!=null){
+      const key = (data.bid.leaderTeamId||'')+'|'+data.bid.price+'|'+(data.bid.playerIndex||0)+'|'+(data.meta&&data.meta.currentIndex);
+      if(window._lastBidKey !== key){
+        window._lastBidKey = key;
+        window._countdownSec=null;
+        try{ if(ttsSupported()) speechSynthesis.cancel(); }catch(e){}
+        if(onAuction || onWatch){
+          if(!window._sfxSkipBid) playSfx('bid');
+          window._sfxSkipBid=false;
+          sayEvent(data.bid.leaderTeamName+' leads at '+data.bid.price, 'bid');
+        }
+      }
+    }
+
+    // Bid phase: waiting for host / extend for viewers & owners
+    if(data.mode==='virtual' && data.bid){
+      const ph=data.bid.phase||'';
+      if(ph==='await_host'){
+        if(window._sayAwait!=='1' && (onAuction||onWatch)){
+          window._sayAwait='1';
+          sayEvent('Time up. Waiting for host decision.', 'host');
+        }
+      } else if(window._sayAwait==='1' && ph==='contest' && (onAuction||onWatch)){
+        window._sayAwait=null;
+        sayEvent('Time extended. Other teams may bid.', 'host');
+      } else if(ph!=='await_host'){
+        window._sayAwait=null;
+      }
+    }
+
+    // Team quit — all clients (host, owners, viewers)
+    if(data.mode==='virtual' && data.bid && data.bid.lastQuit && data.bid.lastQuit.at){
+      const qk='quit|'+data.bid.lastQuit.at+'|'+(data.bid.lastQuit.teamId||'');
+      if(window._lastQuitKey!==qk && onLiveScreen){
+        window._lastQuitKey=qk;
+        const q=data.bid.lastQuit;
+        sayEvent((q.teamName||'A team')+' quit from bidding for '+(q.playerName||'the player')+'.', 'bid');
+      }
+    }
+
+    // Pause
+    if(data.paused && onLiveScreen){
+      if(window._sayPaused!=='1'){
+        window._sayPaused='1';
+        sayEvent('Bidding paused. Host has taken a break.', 'host');
+      }
+    } else if(!data.paused && window._sayPaused==='1' && onLiveScreen){
+      window._sayPaused=null;
+      sayEvent('Host has resumed the bidding.', 'host');
+    }
+
+    // Ended
+    if(data.status==='ended' && onLiveScreen && window._lastEndedId !== (auctionId||'')){
+      window._lastEndedId = auctionId||'';
+      sayEvent('Auction closed. Bidding is no longer available.', 'host');
+    }
+
+    // Sold / unsold results for all clients (host, owners, viewers)
+    if(onLiveScreen && data.players && data.teams){
+      const soldN = data.players.filter(p=>p.sold).length;
+      const unsoldN = data.players.filter(p=>p.unsold).length;
+      if(window._soldN!=null && soldN>window._soldN){
+        // find a newly sold-ish: last result before current index
+        let idx=(data.meta&&data.meta.currentIndex)||0;
+        const recent = (typeof findLastResult==='function') ? findLastResult(data.players, data.teams, idx) : null;
+        if(recent && recent.sold){
+          playSfx('sold');
+          sayEvent((recent.name||'Player')+' sold to '+(recent.team||'a team')+' for '+(recent.price||''), 'host');
+        } else {
+          sayEvent('A player was sold.', 'host');
+        }
+      } else if(window._unsoldN!=null && unsoldN>window._unsoldN){
+        let idx=(data.meta&&data.meta.currentIndex)||0;
+        const recent = (typeof findLastResult==='function') ? findLastResult(data.players, data.teams, idx) : null;
+        if(recent && !recent.sold){
+          playSfx('unsold');
+          sayEvent((recent.name||'Player')+' unsold.', 'host');
+        } else {
+          sayEvent('A player was marked unsold.', 'host');
+        }
+      }
+      window._soldN=soldN;
+      window._unsoldN=unsoldN;
+    }
+
+    // Presence: owner left room
+    if(data.owners && data.presence){
+      const now=Date.now();
+      window._ownerOnlineState = window._ownerOnlineState || {};
+      data.owners.forEach(o=>{
+        if(!o||!o.uid) return;
+        const p=data.presence[o.uid];
+        const online=p && p.lastSeen && (now-p.lastSeen)<20000;
+        const prev=window._ownerOnlineState[o.uid];
+        if(prev===true && online===false && onLiveScreen){
+          sayEvent((o.teamName||o.displayName||'A team')+' left the room.', 'host');
+        }
+        window._ownerOnlineState[o.uid]=online;
+      });
+    }
+
+    // New franchise owner join request (host on assign / setup)
+    if(data.pendingOwners && Array.isArray(data.pendingOwners)){
+      const n=data.pendingOwners.length;
+      if(window._pendingOwnerCount!=null && n>window._pendingOwnerCount){
+        const newest=data.pendingOwners[n-1];
+        const who=(newest&& (newest.displayName||newest.email))||'A new owner';
+        sayEvent(who+' joined and is waiting for a team assignment.', 'wait');
+      }
+      window._pendingOwnerCount=n;
+    }
+  }catch(e){}
+
+  // Only rebuild auction UI when something meaningful changes (not presence ticks)
+  if($('screenAuction') && !$('screenAuction').classList.contains('hidden')){
+    const ae=document.activeElement;
+    const typing=ae && (ae.id==='ultimateBid'||ae.id==='newPrice'||ae.id==='addQ'||ae.id==='addPrice'||ae.id==='addSel'||ae.tagName==='INPUT');
+    const bid=data.bid||{};
+    const sig=[
+      data.status,
+      data.paused?'1':'0',
+      (data.meta&&data.meta.currentIndex),
+      bid.price,
+      bid.leaderTeamId,
+      bid.phase,
+      bid.playerIndex,
+      // do NOT include timerEndsAt — timer text updates separately without re-render/focus
+      (data.players||[]).filter(p=>p.sold).length,
+      (data.players||[]).filter(p=>p.unsold).length
+    ].join('|');
+    if(typing && window._aucSig===sig && data.status!=='ended'){
+      return; // user typing — do not steal focus or rebuild
+    }
+    if(window._aucSig===sig && data.status!=='ended' && !data.paused){
+      // Same lot/price/phase — only refresh timer text if present
+      const tel=$('pTimer');
+      if(tel && bid.timerEndsAt) updateTimerDisplay(tel, bid.timerEndsAt, bid.phase);
+      return;
+    }
+    window._aucSig=sig;
+    const onSq=$('tabSquads')&&!$('tabSquads').classList.contains('hidden');
+    if(onSq && data.status!=='ended') renderSquads();
+    else renderAuction({ skipFocus: true });
+  }
+}
+
+
+
+function startAuctionLive(id){
+  stopAuctionLive();
+  auctionLiveUnsub=db.collection('auctions').doc(id).onSnapshot(doc=>{
+    if(!doc.exists) return;
+    applyAuctionData(doc.data());
+  });
+  // Presence heartbeat for owners / host
+  if(window._presenceTimer) clearInterval(window._presenceTimer);
+  window._presenceTimer=setInterval(()=>{
+    if(!user||!id||!db) return;
+    const onAuc=!$('screenAuction').classList.contains('hidden');
+    const onWatch=!$('screenWatch').classList.contains('hidden');
+    if(!onAuc && !onWatch) return;
+    const payload={ lastSeen: Date.now(), email:user.email||'', name:user.displayName||'', teamId: myTeamId||null };
+    const upd={};
+    upd['presence.'+user.uid]=payload;
+    db.collection('auctions').doc(id).update(upd).catch(err=>{
+      // fallback merge if update blocked
+      db.collection('auctions').doc(id).set({ presence: { [user.uid]: payload } }, { merge: true }).catch(()=>{});
+    });
+  }, 5000);
+}
+
+function stopPresence(){
+  if(window._presenceTimer){ clearInterval(window._presenceTimer); window._presenceTimer=null; }
+}
+
+
+async function openAuction(id){
+  if(watchUnsub){watchUnsub();watchUnsub=null;}
+  stopAuctionLive();
+  const snap=await db.collection('auctions').doc(id).get();
+  if(!snap.exists){ alert('Auction not found'); return; }
+  const data=snap.data();
+  const isOwner=user&&data.ownerId===user.uid;
+  const isHelper=user&&(data.coOrganiserIds||[]).includes(user.uid);
+  const isTeamOwner=user&&(data.owners||[]).some(o=>o.uid===user.uid&&o.teamId);
+  if((isOwner||isHelper||isTeamOwner) && (data.status==='live'||data.status==='setup')){
+    resumeAuction(id,data); return;
+  }
+  showScreen('screenWatch'); focusEl($('watchTitle'));
+  switchWatchTab('live');
+  watchUnsub=db.collection('auctions').doc(id).onSnapshot(doc=>{
+    if(!doc.exists) return;
+    renderWatch(doc.data());
+  });
+}
+
+function resumeAuction(id, data){
+  auctionId=id;
+  applyAuctionData(data);
+  showScreen('screenAuction');
+  startAuctionLive(id);
+  if(ownerMode && isVirtual()) switchTab('auction');
+  else if(helperMode) switchTab('squads');
+  else switchTab('auction');
+  renderAuction();
+  if(data.paused && user && data.ownerId===user.uid){
+    ask('Continue bidding?','You were on break. Continue the auction?', async()=>{
+      T.paused=false;
+      await cloudSave(false);
+      window._ttsPauseKey=null;
+      announce('Auction resumed');
+      sayEvent('Host has resumed the bidding.', 'host');
+      renderAuction();
+    });
+  } else {
+    announce(ownerMode?'Team owner view. Use raise buttons to bid.': helperMode?'Helper view. Squads only.':'Host auction.');
+  }
+}
+
+$('btnWatchBack').onclick=()=>{ if(watchUnsub){watchUnsub();watchUnsub=null;} enterHome(); };
+$('wTabLive').onclick=()=>switchWatchTab('live');
+$('wTabSquads').onclick=()=>switchWatchTab('squads');
+$('wTabLists').onclick=()=>switchWatchTab('lists');
+function switchWatchTab(which){
+  ['Live','Squads','Lists'].forEach(n=>{
+    const on=which.toLowerCase()===n.toLowerCase();
+    const pane=$('watchPane'+n); const btn=$('wTab'+n);
+    if(pane) pane.classList.toggle('hidden',!on);
+    if(btn){ btn.classList.toggle('active',on); btn.setAttribute('aria-selected',on?'true':'false'); }
+  });
+}
+
+function findLastResult(players, teams, beforeIdx){
+  for(let i=beforeIdx-1;i>=0;i--){
+    const prev=players[i]; if(!prev) continue;
+    if(prev.sold){
+      let team='—', price='—';
+      (teams||[]).forEach(t=>{ const f=(t.players||[]).find(x=>x.serial===prev.serial&&x.name===prev.name); if(f){team=t.name;price=f.price;} });
+      return {name:prev.name||'Player',status:'Sold',team,price,sold:true};
+    }
+    if(prev.unsold) return {name:prev.name||'Player',status:'Unsold',team:'—',price:'—',sold:false};
+  }
+  return null;
+}
+function recentCardHtml(recent){
+  if(!recent) return '';
+  const badge=recent.sold?'<span class="badge sold">Sold</span>':'<span class="badge unsold">Unsold</span>';
+  return '<aside class="recent-card" aria-label="Most recent result"><p class="label">Recent result</p><p style="font-weight:800;margin:0">'+(recent.name||'')+'</p><p style="margin:4px 0 0">'+badge+(recent.sold?' <strong>'+recent.team+'</strong> · '+recent.price:'')+'</p></aside>';
+}
+
+function renderWatch(data){
+  $('watchTitle').textContent=data.title||'Live auction';
+  const players=data.players||[], teams=data.teams||[];
+  const sold=players.filter(p=>p.sold).length, unsold=players.filter(p=>p.unsold).length;
+  const pending=players.length-sold-unsold;
+  const wkey=sold+'|'+unsold+'|'+pending+'|'+players.length;
+  if(window._wstatsKey!==wkey){
+    window._wstatsKey=wkey;
+    $('watchStats').innerHTML=
+      '<div class="stats-4" aria-hidden="true">'+
+      '<span class="stat">Sold<br><strong>'+sold+'</strong></span>'+
+      '<span class="stat">Unsold<br><strong>'+unsold+'</strong></span>'+
+      '<span class="stat">Pending<br><strong>'+pending+'</strong></span>'+
+      '<span class="stat">Total<br><strong>'+players.length+'</strong></span></div>';
+  }
+
+  if(data.paused){
+    $('watchPlayer').innerHTML='<div class="player-stage"><h2 id="wPN" tabindex="-1">Host on break</h2><p>Bidding is paused.</p></div>';
+    focusEl($('wPN'));
+    return;
+  }
+  if(data.status==='ended'){
+    $('watchPlayer').innerHTML='<div class="player-stage"><h2 id="wPN" tabindex="-1">Auction closed</h2></div>';
+    return;
+  }
+
+  let idx=(data.meta&&data.meta.currentIndex)||0;
+  while(idx<players.length&&(players[idx].sold||players[idx].unsold)) idx++;
+  const recent=findLastResult(players,teams,idx>=players.length?players.length:idx);
+  const box=$('watchPlayer');
+
+  if(idx>=players.length){
+    box.innerHTML='<div class="player-stage"><p id="wDone" tabindex="-1"><strong>Auction complete</strong></p></div>'+recentLineHtml(recent);
+  } else {
+    const p=players[idx];
+    const bid=data.bid||{};
+    const rules=data.rules||{};
+    let timer='—', lead='No bid · Base '+(rules.basePrice||'—');
+    if(data.mode==='virtual'){
+      if(bid.leaderTeamName) lead='Leading: '+bid.leaderTeamName+' · '+bid.price;
+      if(bid.phase==='await_host') timer='Waiting for host';
+      else if(bid.timerEndsAt){
+        const sec=Math.max(0, Math.ceil((bid.timerEndsAt-Date.now())/1000));
+        timer=(bid.phase==='open'?'Open: ':'Time: ')+sec+'s';
+      }
+    }
+    box.innerHTML=
+      '<div class="player-stage">'+
+      '<p style="margin:0;font-size:12px;font-weight:700;color:var(--muted)">NOW AUCTIONING · '+(idx+1)+'/'+players.length+'</p>'+
+      '<h2 class="player-name" id="wPN" tabindex="-1">'+(p.name||'Unnamed')+'</h2></div>'+
+      (data.mode==='virtual'?('<p class="timer-box" id="wTimer">'+timer+'</p><p class="lead-line">'+lead+'</p>'):'')+
+      recentLineHtml(recent);
+    // No bid buttons, no join meeting for viewers
+    // Viewer: never steal focus on live ticks
+  }
+
+  let sh='<div class="squad-grid">';
+  teams.forEach(t=>{
+    sh+='<div class="squad-card"><p class="sc-name">'+t.name+'</p><p class="sc-sub">'+(t.players||[]).length+' players · Purse left '+t.remaining+'</p></div>';
+  });
+  sh+='</div>';
+  $('watchPaneSquads').innerHTML=sh;
+  let lh='';
+  [['Sold',players.filter(p=>p.sold)],['Unsold',players.filter(p=>p.unsold)],['Upcoming',players.filter(p=>!p.sold&&!p.unsold)]].forEach(([k,a])=>{
+    lh+='<h3>'+k+' ('+a.length+')</h3><ul class="plain">'; a.forEach(p=>lh+='<li>'+(p.name||'')+'</li>'); lh+='</ul>';
+  });
+  $('watchPaneLists').innerHTML=lh;
+}
+
+function updateTimerDisplay(el, endsAt, phase){
+  if(!el||!endsAt) return;
+  const ms=endsAt - Date.now();
+  const sec=Math.max(0, Math.ceil(ms/1000));
+  el.textContent=(phase==='open'?'Open window: ':'Time left: ')+sec+'s';
+  el.className='timer-box'+(sec<=5?' end':sec<=10?' warn':'');
+}
+
+/* ========== WIZARD ========== */
+$('btnCreate').onclick=async()=>{ stopAssignLive(); stopWait();
+  await refreshProfile();
+  if(!canCreate()){ alert('You need organiser permission.'); return; }
+  wiz={name:'',teamCount:'',purse:'',minP:'',maxP:'',teamNames:[],mode:'physical',rules:{}};
+  step=0; T=null; auctionId=null;
+  renderWizard(); showScreen('screenWizard');
+};
+
+function renderWizard(){
+  const titles=isVirtualPath()
+    ? ['Tournament name','Number of teams','Purse per team','Min & max players','Team names','Auction type','Virtual rules','Import players','Invite & assign','Go live']
+    : ['Tournament name','Number of teams','Purse per team','Min & max players','Team names','Auction type','Import players','Co-organisers','Go live'];
+  // Dynamic titles based on mode chosen after step 5
+  const body=$('wizBody'); body.innerHTML=''; const nav=$('wizNav'); nav.innerHTML='';
+  const labels=wizardLabels();
+  $('wizProgress').textContent='Step '+(step+1)+' of '+labels.length;
+  $('wizTitle').textContent=labels[step]||'Create tournament';
+
+  if(step===0) body.innerHTML='<label for="wName">Tournament name</label><input id="wName" type="text" value="'+(wiz.name||'')+'" autocomplete="off" />';
+  else if(step===1) body.innerHTML='<label for="wCount">Number of teams</label><input id="wCount" type="text" inputmode="numeric" value="'+(wiz.teamCount||'')+'" />';
+  else if(step===2) body.innerHTML='<label for="wPurse">Maximum purse per team</label><input id="wPurse" type="text" inputmode="numeric" value="'+(wiz.purse||'')+'" />';
+  else if(step===3){
+    const ar=wiz.alertRules||{};
+    body.innerHTML='<label for="wMin">Minimum players per team</label><input id="wMin" type="text" inputmode="numeric" value="'+(wiz.minP||'')+'" autocomplete="off" />'+
+      '<label for="wMax">Maximum players per team</label><input id="wMax" type="text" inputmode="numeric" value="'+(wiz.maxP||'')+'" autocomplete="off" />'+
+      '<h2 style="font-size:1.05rem;margin-top:16px">Squad and purse alerts</h2>'+
+      '<p style="color:var(--muted);font-size:14px">Announced to host, owners, and viewers when commentary or screen reader alerts are active.</p>'+
+      '<label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" id="arMin" '+(ar.minPlayers!==false?'checked':'')+' /> Alert when a team reaches minimum players</label>'+
+      '<label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" id="arMax" '+(ar.maxPlayers!==false?'checked':'')+' /> Alert when a team reaches maximum players</label>'+
+      '<label for="arCustom">Custom player counts (comma separated)</label>'+
+      '<input id="arCustom" type="text" inputmode="numeric" placeholder="e.g. 5, 10, 12, 14" value="'+((ar.customCounts||[]).join(', '))+'" autocomplete="off" />'+
+      '<label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" id="arPurse" '+(ar.purse!==false?'checked':'')+' /> Purse used alerts (50%, 75%, 90%)</label>';
+  }
+  else if(step===4){
+    let h=''; for(let i=0;i<(wiz.teamCount||0);i++) h+='<label for="tn'+i+'">Team '+(i+1)+' name</label><input id="tn'+i+'" type="text" value="'+(wiz.teamNames[i]||'')+'" />';
+    body.innerHTML=h;
+  }
+  else if(step===5){
+    body.innerHTML='<p>Choose how this tournament will run.</p>'+
+      '<label style="display:flex;gap:10px;align-items:center;min-height:48px"><input type="radio" name="wMode" value="physical" '+(wiz.mode!=='virtual'?'checked':'')+' /> Physical room (host marks Sold / Unsold)</label>'+
+      '<label style="display:flex;gap:10px;align-items:center;min-height:48px"><input type="radio" name="wMode" value="virtual" '+(wiz.mode==='virtual'?'checked':'')+' /> Virtual room (teams raise bids)</label>';
+  }
+  else if(step===6 && wiz.mode==='virtual'){
+    const r=wiz.rules||{};
+    const style=r.bidStyle||'two';
+    body.innerHTML=
+      '<label for="rStyle">Bidding style</label>'+
+      '<select id="rStyle" aria-describedby="rStyleHelp">'+
+      '<option value="two"'+(style==='two'?' selected':'')+'>2 teams at a time (current flow)</option>'+
+      '<option value="unlimited"'+(style==='unlimited'?' selected':'')+'>No limit (any team can raise)</option>'+
+      '</select>'+
+      '<p id="rStyleHelp" style="font-size:14px;color:var(--muted)">2 teams: contest and open window as designed. No limit: any eligible team may raise while time remains.</p>'+
+      '<label for="rBase">Base price</label><input id="rBase" type="text" inputmode="numeric" value="'+(r.basePrice||'')+'" autocomplete="off" />'+
+      '<label for="rMin">Minimum increase</label><input id="rMin" type="text" inputmode="numeric" value="'+(r.minRaise||'')+'" autocomplete="off" />'+
+      '<label for="rMax">Maximum increase (per raise)</label><input id="rMax" type="text" inputmode="numeric" value="'+(r.maxRaise||'')+'" autocomplete="off" />'+
+      '<label style="display:flex;gap:10px;align-items:center;min-height:48px"><input type="checkbox" id="rCustomOn" '+(r.customOn?'checked':'')+' /> Use custom bid buttons</label>'+
+      '<div id="rCustomBox" class="'+(r.customOn?'':'hidden')+'"><label for="rCustomVals">Custom increases (comma separated, within min and max)</label><input id="rCustomVals" type="text" value="'+(r.customBids||[]).join(', ')+'" placeholder="e.g. 25, 50, 75" autocomplete="off" /></div>'+
+      '<label style="display:flex;gap:10px;align-items:center;min-height:48px"><input type="checkbox" id="rUltimateOn" '+(r.ultimateOn?'checked':'')+' /> Allow ultimate bid (type any valid amount)</label>'+
+      '<label for="rTimer">Bid timer (seconds)</label><select id="rTimer">'+
+      [10,20,30,40,50,60].map(s=>'<option value="'+s+'"'+(Number(r.contestSeconds||30)===s?' selected':'')+'>'+s+' seconds</option>').join('')+
+      '</select>'+
+      '<label for="rOpen">Open window after timer (seconds)</label><select id="rOpen">'+
+      [10,15,20,30].map(s=>'<option value="'+s+'"'+(Number(r.openSeconds||20)===s?' selected':'')+'>'+s+' seconds</option>').join('')+
+      '</select>';
+    $('rCustomOn').onchange=()=>$('rCustomBox').classList.toggle('hidden', !$('rCustomOn').checked);
+  }
+  else if((step===6 && wiz.mode!=='virtual') || (step===7 && wiz.mode==='virtual')){
+    body.innerHTML='<label for="wFile">Players file (CSV or Excel)</label><input id="wFile" type="file" accept=".csv,.xlsx,.xls" /><div id="wHeaders" class="hidden"></div><div id="wImportMsg"></div>';
+    $('wFile').onchange=onFile;
+  }
+  else if(step===7 && wiz.mode!=='virtual'){
+    body.innerHTML='<p>Optional co-organisers (squad helpers). Share the invite link. Approve helpers below before go live.</p>'+
+      '<label for="wSlots">Maximum helpers</label><select id="wSlots"><option value="0">None</option><option value="1">1</option><option value="2">2</option></select>'+
+      '<div id="physHelperLive" style="margin-top:12px"></div>';
+    setTimeout(()=>renderPhysicalHelperPanel($('physHelperLive')), 0);
+  }
+  else if(step===8 && wiz.mode==='virtual'){
+    renderVirtualAssign(body);
+  }
+  else if((step===8 && wiz.mode!=='virtual') || (step===9 && wiz.mode==='virtual')){
+    let extra='';
+    if(wiz.mode==='virtual'){
+      extra='<p>Virtual room: owners raise bids. Host confirms sale when time ends.</p>'+
+        '<label for="meetLink">Voice meeting link (optional Zoom or Meet)</label>'+
+        '<input id="meetLink" type="url" placeholder="https://meet.google.com/..." value="'+(T&&T.meetLink||'')+'" />';
+    } else {
+      extra='<p>Physical room: you mark Sold or Unsold. Helpers can manage squads after you approve them.</p>'+
+        '<div id="physHelperLive"></div>';
+    }
+    body.innerHTML='<p><strong>'+((T&&T.players)?T.players.length:0)+' players</strong> ready.</p>'+extra+
+      '<button type="button" id="btnGoLive" class="btn-ok btn-block" style="margin-top:14px">Go live now</button>';
+    $('btnGoLive').onclick=goLive;
+    if(wiz.mode!=='virtual') renderPhysicalHelperPanel($('physHelperLive'));
+  }
+
+  if(step>0){ const b=document.createElement('button'); b.type='button'; b.className='btn-sec'; b.textContent='Back'; b.onclick=()=>{step--;renderWizard();}; nav.appendChild(b); }
+  const lastStep=wiz.mode==='virtual'?9:8;
+  if(step<lastStep && !(step===lastStep)){
+    if(!(wiz.mode==='virtual'&&step===9) && !(wiz.mode!=='virtual'&&step===8)){
+      const n=document.createElement('button'); n.type='button'; n.className='btn-ok';
+      n.textContent='Save and next';
+      n.onclick=wizardNext; nav.appendChild(n);
+    }
+  }
+  const c=document.createElement('button'); c.type='button'; c.className='btn-sec'; c.textContent='Cancel'; c.onclick=()=>enterHome(); nav.appendChild(c);
+  focusEl($('wizTitle'));
+  setTimeout(()=>{ const f=body.querySelector('input,select,button'); if(f) focusEl(f); },60);
+}
+
+function wizardLabels(){
+  if(wiz.mode==='virtual') return ['Tournament name','Number of teams','Purse','Min & max players','Team names','Auction type','Virtual rules','Import players','Invite & assign teams','Go live'];
+  return ['Tournament name','Number of teams','Purse','Min & max players','Team names','Auction type','Import players','Co-organisers','Go live'];
+}
+function isVirtualPath(){ return wiz.mode==='virtual'; }
+
+function wizardNext(){
+  if(step===0){ const n=$('wName').value.trim(); if(!n){alert('Enter a tournament name');return;} wiz.name=n; }
+  else if(step===1){ const tc=parseInt(String($('wCount').value).replace(/\D/g,''),10); if(!tc){alert('Enter number of teams');return;} wiz.teamCount=tc; }
+  else if(step===2){ const p=parseInt(String($('wPurse').value).replace(/\D/g,''),10); if(!p){alert('Enter purse');return;} wiz.purse=p; }
+  else if(step===3){
+    const mn=parseInt(String($('wMin').value).replace(/\D/g,''),10);
+    const mx=parseInt(String($('wMax').value).replace(/\D/g,''),10);
+    if(isNaN(mn)||isNaN(mx)||mx<1){alert('Check min and max players');return;}
+    if(mx<mn){alert('Maximum must be at least minimum');return;}
+    wiz.minP=mn; wiz.maxP=mx;
+    const custom=String($('arCustom').value||'').split(/[,\s]+/).map(x=>parseInt(x,10)).filter(n=>n>0);
+    wiz.alertRules={
+      minPlayers: !!$('arMin').checked,
+      maxPlayers: !!$('arMax').checked,
+      customCounts: custom,
+      purse: !!$('arPurse').checked,
+      fired: {}
+    };
+  }
+  else if(step===4){
+    wiz.teamNames=[]; for(let i=0;i<wiz.teamCount;i++) wiz.teamNames.push(($('tn'+i).value.trim())||('Team '+(i+1)));
+    T={ title:wiz.name, mode:'physical', status:'setup', teams:wiz.teamNames.map((nm,i)=>({id:'t'+i,name:nm,purse:wiz.purse,remaining:wiz.purse,players:[],minPlayers:wiz.minP,maxPlayers:wiz.maxP,maxReached:false})),
+      players:[], meta:{currentIndex:0}, activeColumns:activeCols, rules:null, bid:null, owners:[], pendingOwners:[], pendingCoOrganisers:[], coOrganiserIds:[], meetLink:'',
+      alertRules: wiz.alertRules||{ minPlayers:true, maxPlayers:true, customCounts:[], purse:true, fired:{} } };
+  }
+  else if(step===5){
+    const m=document.querySelector('input[name="wMode"]:checked');
+    wiz.mode=m?m.value:'physical';
+    if(T) T.mode=wiz.mode;
+  }
+  else if(step===6 && wiz.mode==='virtual'){
+    const base=parseInt(String($('rBase').value).replace(/\D/g,''),10);
+    const minR=parseInt(String($('rMin').value).replace(/\D/g,''),10);
+    const maxR=parseInt(String($('rMax').value).replace(/\D/g,''),10);
+    if(!base||!minR){ alert('Enter base price and minimum increase'); return; }
+    if(maxR && maxR<minR){ alert('Maximum increase must be at least the minimum'); return; }
+    const customOn=$('rCustomOn').checked;
+    let customBids=[];
+    if(customOn){
+      customBids=String($('rCustomVals').value||'').split(/[,\s]+/).map(x=>parseInt(x,10)).filter(n=>n&&n>=minR&&(!maxR||n<=maxR));
+      if(!customBids.length){ alert('Enter valid custom increases between min and max'); return; }
+    }
+    const bidStyle=$('rStyle').value==='unlimited'?'unlimited':'two';
+    const ultimateOn=!!$('rUltimateOn').checked;
+    wiz.rules={ bidStyle, basePrice:base, minRaise:minR, maxRaise:maxR||minR*10, customOn, customBids, ultimateOn, contestSeconds:parseInt($('rTimer').value,10)||30, openSeconds:parseInt($('rOpen').value,10)||20 };
+    if(T) T.rules=wiz.rules;
+  }
+  else if((step===6&&wiz.mode!=='virtual')||(step===7&&wiz.mode==='virtual')){
+    if(!T||!T.players||!T.players.length){ alert('Import players first'); return; }
+  }
+  else if(step===7 && wiz.mode!=='virtual'){
+    if($('wSlots')) T.coOrganiserSlots=parseInt($('wSlots').value,10)||0;
+    T.status='setup';
+    try{ cloudSave(true); }catch(e){}
+  }
+  else if(step===8 && wiz.mode==='virtual'){
+    T.status='setup'; cloudSave(true);
+  }
+  step++; renderWizard();
+}
+
+function onFile(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  const name=f.name.toLowerCase();
+  if(name.endsWith('.csv')){
+    const r=new FileReader();
+    r.onload=e=>{ parsedRows=e.target.result.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).map(x=>x.split(',').map(c=>c.trim().replace(/^"|"$/g,''))); headers=parsedRows[0]||[]; showHeaders(); };
+    r.readAsText(f);
+  } else {
+    const r=new FileReader();
+    r.onload=e=>{ try{ const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'}); parsedRows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1}).filter(r=>r&&r.length); headers=parsedRows[0]||[]; showHeaders(); }catch(err){alert('Could not read file');} };
+    r.readAsArrayBuffer(f);
+  }
+}
+function showHeaders(){
+  const box=$('wHeaders'); box.classList.remove('hidden');
+  let h='<h3>Select columns to import</h3>';
+  headers.forEach((x,i)=>{ h+='<label style="display:flex;gap:8px;align-items:center;min-height:44px"><input type="checkbox" class="colcb" value="'+i+'" checked /> '+(x||('Column '+(i+1)))+'</label>'; });
+  h+='<button type="button" id="btnImport" class="btn-ok">Import players</button>';
+  box.innerHTML=h; focusEl(box.querySelector('h3'));
+  $('btnImport').onclick=doImport;
+}
+function doImport(){
+  const checks=[...document.querySelectorAll('.colcb:checked')].map(c=>parseInt(c.value,10));
+  if(!checks.length){ alert('Select at least one column'); return; }
+  const names=checks.map(i=>(headers[i]||'').toString().toLowerCase());
+  const map={serial:-1,name:-1,gamerId:-1,state:-1};
+  names.forEach((hn,idx)=>{ if(/serial|^id$|sno/.test(hn)&&map.serial<0)map.serial=checks[idx]; if(/name|player/.test(hn)&&map.name<0)map.name=checks[idx]; if(/gamer|username|ign/.test(hn)&&map.gamerId<0)map.gamerId=checks[idx]; if(/state|region|city/.test(hn)&&map.state<0)map.state=checks[idx]; });
+  if(map.name<0) map.name=checks[0];
+  activeCols={serial:map.serial>=0,name:true,gamerId:map.gamerId>=0,state:map.state>=0};
+  T.players=parsedRows.slice(1).map(r=>({serial:map.serial>=0?String(r[map.serial]||''):'',name:map.name>=0?String(r[map.name]||''):'',gamerId:map.gamerId>=0?String(r[map.gamerId]||''):'',state:map.state>=0?String(r[map.state]||''):'',sold:false,unsold:false}));
+  T.activeColumns=activeCols;
+  $('wImportMsg').innerHTML='<p><strong>Imported '+T.players.length+' players.</strong></p>';
+  alert('Import complete. '+T.players.length+' players imported.');
+  announce('Imported '+T.players.length+' players');
+}
+
+async function cloudSave(silent){
+  if(!T||!db||!user) return;
+  const payload={
+    title:T.title, mode:T.mode||'physical', ownerId:user.uid, ownerEmail:user.email||'', ownerName:user.displayName||'',
+    status:T.status||'setup', teams:T.teams||[], players:T.players||[], meta:T.meta||{currentIndex:0},
+    activeColumns:T.activeColumns||activeCols, rules:T.rules||null, bid:T.bid||null,
+    owners:T.owners||[], pendingOwners:T.pendingOwners||[],
+    pendingCoOrganisers:T.pendingCoOrganisers||[], coOrganiserIds:T.coOrganiserIds||[], coOrganiserEmails:T.coOrganiserEmails||[],
+    meetLink:T.meetLink||'', paused:!!T.paused, alertRules:T.alertRules||null, updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+  // Do not wipe presence from host saves
+  if(T.presence) payload.presence=T.presence;
+  try{
+    if(auctionId) await db.collection('auctions').doc(auctionId).set(payload,{merge:true});
+    else { const ref=await db.collection('auctions').add(payload); auctionId=ref.id; }
+  }catch(e){ if(!silent) safeAlert(e); throw e; }
+}
+
+function inviteUrl(){ return location.origin+location.pathname+'?join='+(auctionId||''); }
+
+let assignUnsub=null;
+function stopAssignLive(){
+  if(assignUnsub){ try{assignUnsub();}catch(e){} assignUnsub=null; }
+}
+
+
+let physHelperUnsub=null;
+function stopPhysHelperLive(){
+  if(physHelperUnsub){ try{physHelperUnsub();}catch(e){} physHelperUnsub=null; }
+}
+
+async function renderPhysicalHelperPanel(box){
+  if(!box) return;
+  stopPhysHelperLive();
+  T.status=T.status||'setup';
+  try{
+    if(typeof cloudSave==='function') await cloudSave(true);
+  }catch(e){}
+  if(!auctionId){
+    box.innerHTML='<p style="color:var(--muted)">Save progress first (Save and next) so an invite link can be created.</p>';
+    return;
+  }
+  const url=(typeof inviteUrl==='function')?inviteUrl():(location.origin+location.pathname+'?join='+auctionId);
+  box.innerHTML=
+    '<p><strong>Helper invite link</strong></p>'+
+    '<input type="text" readonly id="physInv" value="'+url.replace(/"/g,'&quot;')+'" style="width:100%" />'+
+    '<button type="button" id="btnCopyPhysInv" class="btn-sec btn-block">Copy helper invite link</button>'+
+    '<p style="color:var(--muted);font-size:14px">Helpers open the link, sign in, then appear below. Approve to allow squad edits.</p>'+
+    '<div id="physHelperList"></div>';
+  $('btnCopyPhysInv').onclick=()=>{
+    const v=$('physInv').value;
+    if(navigator.clipboard) navigator.clipboard.writeText(v).then(()=>alert('Copied')); else alert(v);
+  };
+  physHelperUnsub=db.collection('auctions').doc(auctionId).onSnapshot(doc=>{
+    if(!doc.exists) return;
+    const data=doc.data();
+    T.pendingCoOrganisers=data.pendingCoOrganisers||[];
+    T.coOrganiserIds=data.coOrganiserIds||[];
+    T.coOrganiserEmails=data.coOrganiserEmails||[];
+    paintPhysicalHelpers($('physHelperList'));
+  });
+}
+
+function paintPhysicalHelpers(box){
+  if(!box) return;
+  const pending=T.pendingCoOrganisers||[];
+  const ids=T.coOrganiserIds||[];
+  let h='<h3>Helper requests</h3>';
+  if(!pending.length && !ids.length) h+='<p style="color:var(--muted)">No helpers yet.</p>';
+  pending.forEach(p=>{
+    const approved=ids.indexOf(p.uid)>=0;
+    h+='<div class="panel" style="margin-top:8px"><strong>'+(p.displayName||p.email||'Helper')+'</strong><br>'+
+      '<span style="color:var(--muted)">'+(p.email||'')+'</span>';
+    if(approved){
+      h+='<p><span class="badge sold">Approved</span></p>'+
+        '<button type="button" class="btn-danger btnPhysRevoke" data-uid="'+p.uid+'">Remove helper</button>';
+    } else {
+      h+='<button type="button" class="btn-ok btnPhysApprove" data-uid="'+p.uid+'" data-email="'+(p.email||'')+'">Approve helper</button>';
+    }
+    h+='</div>';
+  });
+  box.innerHTML=h;
+  box.querySelectorAll('.btnPhysApprove').forEach(btn=>{
+    btn.onclick=async()=>{
+      const uid=btn.getAttribute('data-uid');
+      const email=btn.getAttribute('data-email')||'';
+      T.coOrganiserIds=T.coOrganiserIds||[];
+      T.coOrganiserEmails=T.coOrganiserEmails||[];
+      if(T.coOrganiserIds.indexOf(uid)<0) T.coOrganiserIds.push(uid);
+      if(email && T.coOrganiserEmails.indexOf(email)<0) T.coOrganiserEmails.push(email);
+      const slots=T.coOrganiserSlots||2;
+      if(T.coOrganiserIds.length>slots && slots>0){
+        alert('Maximum helpers is '+slots);
+        T.coOrganiserIds=T.coOrganiserIds.filter(id=>id!==uid);
+        return;
+      }
+      await cloudSave(false);
+      sayEvent('Helper approved.', 'host');
+    };
+  });
+  box.querySelectorAll('.btnPhysRevoke').forEach(btn=>{
+    btn.onclick=async()=>{
+      const uid=btn.getAttribute('data-uid');
+      T.coOrganiserIds=(T.coOrganiserIds||[]).filter(id=>id!==uid);
+      await cloudSave(false);
+      sayEvent('Helper removed.', 'host');
+    };
+  });
+}
+
+async function renderVirtualAssign(body){
+  stopAssignLive();
+  T.status='setup';
+  try{ await cloudSave(true); }catch(e){}
+  if(!auctionId){
+    body.innerHTML='<p>Could not create draft auction. Check connection and rules.</p>';
+    return;
+  }
+  const url=inviteUrl();
+  body.innerHTML=
+    '<p><strong>Invite link</strong> — share with franchise owners</p>'+
+    '<input type="text" readonly value="'+url.replace(/"/g,'&quot;')+'" id="invField" style="width:100%" />'+
+    '<button type="button" id="btnCopyInv" class="btn-sec btn-block">Copy invite link</button>'+
+    '<p style="color:var(--muted);font-size:14px">This list updates live when owners open the link and sign in.</p>'+
+    '<div id="assignLive"></div>';
+
+  $('btnCopyInv').onclick=()=>{
+    const v=$('invField').value;
+    if(navigator.clipboard) navigator.clipboard.writeText(v).then(()=>alert('Link copied')); else alert(v);
+  };
+
+  assignUnsub = db.collection('auctions').doc(auctionId).onSnapshot(doc=>{
+    if(!doc.exists) return;
+    const data=doc.data();
+    const prev=T.pendingOwners||[];
+    T.pendingOwners = data.pendingOwners||[];
+    T.owners = data.owners||[];
+    if(T.pendingOwners.length > prev.length){
+      const newest=T.pendingOwners[T.pendingOwners.length-1];
+      const who=(newest&&(newest.displayName||newest.email))||'A new owner';
+      sayEvent(who+' joined and is waiting for a team assignment.', 'wait');
+    }
+    paintAssignList($('assignLive'));
+  });
+}
+
+function paintAssignList(box){
+  if(!box) return;
+  const pending=T.pendingOwners||[];
+  const owners=T.owners||[];
+  let h='<h3>Join requests and assignments</h3>';
+  if(!pending.length && !owners.length){
+    h+='<p style="color:var(--muted)">No owners have joined yet. Share the invite link.</p>';
+  }
+  // Show all pending + owners
+  const seen={};
+  pending.forEach((p,i)=>{
+    seen[p.uid]=true;
+    const assigned=owners.find(o=>o.uid===p.uid);
+    h+='<div class="panel" style="margin-top:8px"><strong>'+(p.displayName||p.email||'Owner')+'</strong><br>'+
+      '<span style="color:var(--muted)">'+(p.email||'')+'</span>';
+    if(assigned&&assigned.teamId){
+      h+='<p>Assigned: <strong>'+(assigned.teamName||'')+'</strong></p>'+
+        '<button type="button" class="btn-danger btnUnassign" data-uid="'+p.uid+'">Unassign team</button>';
+    } else {
+      h+='<label for="as'+i+'">Select team</label><select id="as'+i+'" data-uid="'+p.uid+'"><option value="">Choose team</option>';
+      (T.teams||[]).forEach(t=>{
+        const taken=owners.some(o=>o.teamId===t.id && o.uid!==p.uid);
+        if(!taken) h+='<option value="'+t.id+'">'+t.name+'</option>';
+      });
+      h+='</select><button type="button" class="btn-ok btnAssign" data-idx="'+i+'" data-uid="'+p.uid+'">Assign team</button>';
+    }
+    h+='</div>';
+  });
+  owners.forEach(o=>{
+    if(seen[o.uid]) return;
+    h+='<div class="panel" style="margin-top:8px"><strong>'+(o.displayName||o.email)+'</strong> · '+(o.teamName||'')+'</div>';
+  });
+  box.innerHTML=h;
+
+  box.querySelectorAll('.btnAssign').forEach(btn=>{
+    btn.onclick=async()=>{
+      const uid=btn.getAttribute('data-uid');
+      const idx=btn.getAttribute('data-idx');
+      const sel=$('as'+idx);
+      const teamId=sel&&sel.value;
+      if(!teamId){ alert('Select a team'); return; }
+      const team=T.teams.find(t=>t.id===teamId);
+      const p=(T.pendingOwners||[]).find(x=>x.uid===uid)||{};
+      T.owners=T.owners||[];
+      T.owners=T.owners.filter(o=>o.uid!==uid);
+      T.owners.push({uid,email:p.email||'',displayName:p.displayName||'',teamId,teamName:team.name});
+      try{
+        await cloudSave(false);
+        announce('Assigned '+(team.name)+' to '+(p.displayName||p.email||'owner'));
+      }catch(e){ safeAlert(e); }
+    };
+  });
+  box.querySelectorAll('.btnUnassign').forEach(btn=>{
+    btn.onclick=async()=>{
+      const uid=btn.getAttribute('data-uid');
+      T.owners=(T.owners||[]).filter(o=>o.uid!==uid);
+      try{ await cloudSave(false); announce('Team unassigned'); }catch(e){ safeAlert(e); }
+    };
+  });
+}
+
+async function goLive(){
+  if(!T||!T.players.length){ alert('Import players first'); return; }
+  if(isVirtual() || (T.mode==='virtual')){
+    const assigned=(T.owners||[]).filter(o=>o.teamId);
+    if(assigned.length<2){
+      alert('Assign at least 2 teams before going live. Currently assigned: '+assigned.length);
+      return;
+    }
+  }
+  if(T.mode==='virtual' && $('meetLink')) T.meetLink=$('meetLink').value.trim();
+  else if(T.mode!=='virtual') T.meetLink='';
+  T.status='live';
+  T.meta=T.meta||{currentIndex:0};
+  const fi=T.players.findIndex(p=>!p.sold&&!p.unsold);
+  T.meta.currentIndex=fi<0?0:fi;
+  if(isVirtual()){
+    const rules=T.rules||wiz.rules;
+    T.rules=rules;
+    T.bid=makeBidStateForPlayer(T.meta.currentIndex);
+  }
+  helperMode=false; ownerMode=false;
+  try{
+    await cloudSave(false);
+    if(!auctionId){ alert('Could not save auction'); return; }
+    alert('You are live.');
+    showScreen('screenAuction');
+    startAuctionLive(auctionId);
+    switchTab('auction');
+    renderAuction();
+  }catch(e){ safeAlert(e); }
+}
+
+function makeBidStateForPlayer(idx){
+  const rules=T.rules||{};
+  const teamStatus={};
+  (T.teams||[]).forEach(t=>{ teamStatus[t.id]='eligible'; });
+  return {
+    phase:'contest',
+    price: rules.basePrice||0,
+    leaderTeamId:null,
+    leaderTeamName:null,
+    teamStatus,
+    activeTeamIds: [], // used when bidStyle==='two'
+    timerEndsAt: Date.now() + (rules.contestSeconds||30)*1000,
+    playerIndex: idx,
+    _announced10: false,
+    _sfxTimer12: false
+  };
+}
+
+function showTimerBanner(msg){
+  const el=$('timerBanner');
+  if(!el) return;
+  el.textContent=msg;
+  el.classList.remove('hidden');
+  announce(msg); // assertive live region also via banner role=status
+  clearTimeout(window._timerBannerT);
+  window._timerBannerT=setTimeout(()=>{ el.classList.add('hidden'); el.textContent=''; }, 3000);
+}
+
+function teamCanRaiseNow(teamId, bid, rules){
+  if(!teamId || !bid) return false;
+  if(bid.phase==='await_host') return false; // host decision — no bidding
+  if((bid.teamStatus||{})[teamId]!=='eligible') return false;
+  if(bid.leaderTeamId===teamId) return false;
+  if((rules.bidStyle||'two')==='unlimited') return true;
+  // 2 teams: at most 2 active; after a quit, seat frees so others see buttons
+  const active=(bid.activeTeamIds||[]).filter(id=>{
+    const st=(bid.teamStatus||{})[id];
+    return st!=='out_quit' && st!=='out_timeout';
+  });
+  if(active.length<2) return true;
+  return active.includes(teamId);
+}
+
+
+/* ========== RENDER AUCTION ========== */
+function switchTab(which){
+  if(helperMode && which==='tools'){ alert('Tools are host-only.'); which='squads'; }
+  ['Auction','Squads','Tools'].forEach(n=>{
+    const on=which.toLowerCase()===n.toLowerCase();
+    $('tab'+n).classList.toggle('hidden',!on);
+    $('tabBtn'+n).classList.toggle('active',on);
+    $('tabBtn'+n).setAttribute('aria-selected',on?'true':'false');
+  });
+  if($('tabBtnTools')) $('tabBtnTools').classList.toggle('hidden', !!(helperMode||ownerMode));
+  if(which==='auction') renderAuction();
+  if(which==='squads'){ squadView=null; renderSquads(); }
+  if(which==='tools'){ $('toolsList').innerHTML=''; focusEl($('toolsTitle')); }
+}
+$('tabBtnAuction').onclick=()=>switchTab('auction');
+$('tabBtnSquads').onclick=()=>switchTab('squads');
+$('tabBtnTools').onclick=()=>switchTab('tools');
+
+function renderAuction(opts){
+  opts=opts||{};
+  if(!T) return;
+  const pl=T.players||[];
+  const sold=pl.filter(p=>p.sold).length, unsold=pl.filter(p=>p.unsold).length;
+  const sk2=sold+'|'+unsold+'|'+(pl.length-sold-unsold)+'|'+pl.length;
+  if(window._statsKey!==sk2){
+    window._statsKey=sk2;
+    $('aucStats').innerHTML='<div class="stats-4" aria-hidden="true"><span class="stat">Sold<br><strong>'+sold+'</strong></span><span class="stat">Unsold<br><strong>'+unsold+'</strong></span><span class="stat">Pending<br><strong>'+(pl.length-sold-unsold)+'</strong></span><span class="stat">Total<br><strong>'+pl.length+'</strong></span></div>';
+  }
+
+  if(T.status==='ended'){
+    stopTimer();
+    const box=$('aucPlayer');
+    const recent=findLastResult(pl,T.teams,(T.meta&&T.meta.currentIndex)||pl.length);
+    box.innerHTML='<div class="player-stage"><h2 id="pName" tabindex="-1">Auction closed</h2>'+
+      '<p>This auction has ended. Bidding and sales are closed.</p></div>'+
+      recentCardHtml(recent)+meetButtonHtml()+
+      '<button type="button" id="btnEndedHome2" class="btn-sec btn-block" style="margin-top:12px">Back to home</button>';
+    focusEl($('pName'));
+    const b=$('btnEndedHome2'); if(b) b.onclick=()=>{ stopAuctionLive(); stopTimer(); helperMode=false; ownerMode=false; enterHome(); };
+    if($('btnEndAuction')) $('btnEndAuction').classList.add('hidden');
+    return;
+  }
+
+  let idx=T.meta.currentIndex||0;
+  while(idx<pl.length&&(pl[idx].sold||pl[idx].unsold)) idx++;
+  T.meta.currentIndex=idx;
+  const box=$('aucPlayer');
+  if(idx>=pl.length){
+    box.innerHTML='<h2 tabindex="-1" id="doneA">All players processed</h2>';
+    focusEl($('doneA')); stopTimer(); return;
+  }
+  const p=pl[idx];
+  const recent=findLastResult(pl,T.teams,idx);
+
+  if(isVirtual()){
+    renderVirtualAuctionUI(box, p, idx, recent, opts);
+    return;
+  }
+
+  // Physical
+  if(helperMode){
+    box.innerHTML='<p style="text-align:center;font-size:13px;font-weight:700;color:var(--muted)">HELPER · SQUADS ONLY</p>'+
+      '<div class="player-stage"><p style="margin:0;font-size:13px;font-weight:700;color:var(--muted)">NOW AUCTIONING</p>'+
+      '<h2 class="player-name" id="pName" tabindex="-1">'+(p.name||'')+'</h2></div>'+recentCardHtml(recent);
+    focusEl($('pName'));
+    if($('btnEndAuction')) $('btnEndAuction').classList.add('hidden');
+    return;
+  }
+  if($('btnEndAuction')) $('btnEndAuction').classList.remove('hidden');
+  box.innerHTML='<div class="player-stage"><p style="margin:0;font-size:13px;font-weight:700;color:var(--muted)">NOW AUCTIONING</p>'+
+    '<p style="color:var(--muted)">Player '+(idx+1)+' of '+pl.length+'</p>'+
+    '<h2 class="player-name" id="pName" tabindex="-1">'+(p.name||'')+'</h2></div>'+recentCardHtml(recent)+
+    '<div class="row" style="justify-content:center;margin-top:12px"><button type="button" id="btnSold" class="btn-ok">Sold</button><button type="button" id="btnUnsold" class="btn-danger">Unsold</button></div>'+
+    '<div id="soldForm" class="hidden" style="margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:8px"></div>';
+  focusElOnce($('pName'), 'phys:'+idx+':'+(p.name||''));
+  $('btnSold').onclick=()=>ask('Confirm sold','Mark '+(p.name||'')+' as sold?',()=>openSoldForm(idx));
+  $('btnUnsold').onclick=()=>ask('Confirm unsold','Mark '+(p.name||'')+' as unsold?', async()=>{ p.unsold=true;p.sold=false;T.players[idx]=p;T.meta.currentIndex=idx+1; await cloudSave(true); renderAuction(); });
+}
+
+function renderVirtualAuctionUI(box, p, idx, recent, opts){
+  opts=opts||{};
+  if(T.status==='ended'){
+    stopTimer();
+    box.innerHTML=
+      '<div class="player-stage" role="status">'+
+      '<h2 id="pName" tabindex="-1">Auction closed</h2>'+
+      '<p>This auction has ended. Bidding is no longer available.</p></div>'+
+      recentLineHtml(recent)+
+      '<button type="button" id="btnEndedHome" class="btn-sec btn-block" style="margin-top:12px">Back to home</button>';
+    focusEl($('pName'));
+    const bh=$('btnEndedHome'); if(bh) bh.onclick=()=>{ stopAuctionLive(); stopTimer(); ownerMode=false; enterHome(); };
+    if($('btnEndAuction')) $('btnEndAuction').classList.add('hidden');
+    return;
+  }
+
+  // Host pause
+  if(T.paused){
+    box.innerHTML='<div class="player-stage"><h2 id="pName" tabindex="-1">Host on break</h2>'+
+      '<p>Bidding is paused. Waiting for the host to continue.</p></div>'+recentLineHtml(recent);
+    focusEl($('pName'));
+    announce('Host on break. Bidding paused.');
+    if(window._ttsPauseKey!=='paused'){ window._ttsPauseKey='paused'; /* applyAuctionData also announces */ }
+    if(user&&T.ownerId===user.uid){
+      box.innerHTML+='<button type="button" id="btnResumeAuc" class="btn-ok btn-block" style="margin-top:12px">Continue bidding</button>';
+      $('btnResumeAuc').onclick=async()=>{
+        T.paused=false;
+        await cloudSave(false);
+        announce('Auction resumed');
+        window._ttsPauseKey=null;
+        renderAuction();
+      };
+    }
+    return;
+  }
+
+  const rules=T.rules||{};
+  if(!T.bid || (T.bid.playerIndex!=null && T.bid.playerIndex!==idx)){
+    if(user&&T.ownerId===user.uid && (!T.bid || T.bid.playerIndex!==idx)){
+      T.bid=makeBidStateForPlayer(idx);
+    }
+  }
+  const b=T.bid||makeBidStateForPlayer(idx);
+  T.bid=b;
+
+  if(b.phase==='await_host'){
+    const isHost=user&&T.ownerId===user.uid;
+    const lead=b.leaderTeamName?('Lead: '+b.leaderTeamName+' at '+b.price):'No leading bid';
+    box.innerHTML='<div class="player-stage"><h2 class="player-name" id="pName" tabindex="-1">'+(p.name||'')+'</h2>'+
+      '<p class="lead-line">'+lead+'</p><p class="timer-box warn">Waiting for host decision</p></div>'+
+      recentLineHtml(recent)+meetButtonHtml();
+    focusEl($('pName'));
+    if(isHost) showHostTimerDecision(!!b.leaderTeamId);
+    return;
+  }
+
+  const isHost=user&&T.ownerId===user.uid;
+  const canRaise=ownerMode && myTeamId && (b.phase==='contest'||b.phase==='open') && teamCanRaiseNow(myTeamId, b, rules);
+  const pl=T.players||[];
+  const sold=pl.filter(x=>x.sold).length, unsold=pl.filter(x=>x.unsold).length;
+  const pending=pl.length-sold-unsold;
+
+  // Stats always local in this panel for owners too (host also has aucStats - update both)
+  const statsKey=sold+'|'+unsold+'|'+pending+'|'+pl.length;
+  if(window._statsKey!==statsKey){
+    window._statsKey=statsKey;
+    $('aucStats').innerHTML=
+      '<div class="stats-4" aria-hidden="true">'+
+      '<span class="stat">Sold<br><strong>'+sold+'</strong></span>'+
+      '<span class="stat">Unsold<br><strong>'+unsold+'</strong></span>'+
+      '<span class="stat">Pending<br><strong>'+pending+'</strong></span>'+
+      '<span class="stat">Total<br><strong>'+pl.length+'</strong></span></div>';
+  }
+
+  // Bid buttons — up to 4 per row
+  let raiseBtns='';
+  if(canRaise){
+    if(!b.leaderTeamId){
+      const base=rules.basePrice||0;
+      raiseBtns+='<button type="button" class="btn-ok bidRaise" data-target="'+base+'" data-inc="0" aria-label="Place opening bid at '+base+'">Open '+base+'</button>';
+    } else {
+      const minInc=rules.minRaise||10;
+      const minT=b.price+minInc;
+      const maxInc=rules.maxRaise||minInc*10;
+      raiseBtns+='<button type="button" class="btn-ok bidRaise" data-inc="'+minInc+'" data-target="'+minT+'" aria-label="Increase by '+minInc+' to '+minT+'">+'+minInc+'</button>';
+      if(rules.customOn && rules.customBids){
+        rules.customBids.forEach(inc=>{
+          if(inc>=minInc && inc<=maxInc){
+            const t=b.price+inc;
+            raiseBtns+='<button type="button" class="btn-sec bidRaise" data-inc="'+inc+'" data-target="'+t+'" aria-label="Increase by '+inc+' to '+t+'">+'+inc+'</button>';
+          }
+        });
+      }
+      raiseBtns+='<button type="button" class="btn-danger" id="btnQuitLot" aria-label="Quit this player">Quit</button>';
+    }
+  } else if(ownerMode){
+    if(b.leaderTeamId===myTeamId) raiseBtns='<p class="lead-line" style="grid-column:1/-1" role="status">You are leading</p>';
+    else if(myStatusOut(b)) raiseBtns='<p style="grid-column:1/-1" role="status">You cannot bid on this player</p>';
+  }
+
+  // Chat-style ultimate always visible for owners who can bid (or if ultimate on)
+  let chat='';
+  if(ownerMode && (rules.ultimateOn!==false)){
+    // Always show chat box for owners in virtual (cleaner); enable send only when valid
+    const ph = b.leaderTeamId ? ((b.price||0)+1) : (rules.basePrice||0);
+    chat=
+      '<div class="chat-bar" role="group" aria-label="Ultimate bid">'+
+      '<label for="ultimateBid" class="sr-only">Enter any bid more than leading team</label>'+
+      '<input id="ultimateBid" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" '+
+      'placeholder="Bid more than lead…" aria-label="Enter any bid more than leading team" />'+
+      '<button type="button" id="btnUltimateSend" class="btn-ok" disabled aria-disabled="true">Send</button></div>';
+  }
+
+  let hostBtns='';
+  if(isHost){
+    hostBtns='<div class="row" style="justify-content:center;margin-top:10px">'+
+      '<button type="button" id="btnExtend" class="btn-sec">Extend timer</button>'+
+      '<button type="button" id="btnForceSold" class="btn-ok">Confirm sold</button>'+
+      '<button type="button" id="btnForceUnsold" class="btn-danger">Mark unsold</button>'+
+      '<button type="button" id="btnOnlineOwners" class="btn-sec">Online owners</button></div>'+
+      '<div id="onlinePanel" class="hidden" style="margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:12px"></div>';
+  }
+
+  const phaseLabel=b.phase==='open'?'Open window':'Contest';
+  const msLeft=Math.max(0,(b.timerEndsAt||0)-Date.now());
+  const sec=Math.ceil(msLeft/1000);
+  const leadText=b.leaderTeamName?('Leading: '+b.leaderTeamName+' · '+b.price):('No bid · Base '+(rules.basePrice||'—'));
+
+  box.innerHTML=
+    '<div class="player-stage">'+
+    '<p style="margin:0;font-size:12px;font-weight:700;color:var(--muted)">NOW AUCTIONING · '+(idx+1)+'/'+pl.length+'</p>'+
+    '<h2 class="player-name" id="pName" tabindex="-1">'+(p.name||'Unnamed')+'</h2>'+
+    '</div>'+
+    '<p class="timer-box" id="pTimer" role="timer">'+phaseLabel+': '+sec+'s</p>'+
+    '<p class="lead-line" id="leadLine" role="status">'+leadText+'</p>'+
+    (raiseBtns?'<div class="bid-grid-4" id="bidGrid">'+raiseBtns+'</div>':'')+
+    chat+
+    hostBtns+
+    recentLineHtml(recent)+
+    meetButtonHtml();
+
+  // Do not move focus on every live refresh — only when player changes
+  const playerKey='p:'+idx+':'+(p.name||'');
+  if(!opts || !opts.skipFocus){
+    const firstRaise=box.querySelector('.bidRaise');
+    if(firstRaise && ownerMode && window._focusKey!==playerKey){
+      window._focusKey=playerKey;
+      setTimeout(()=>focusEl(firstRaise), 60);
+    } else if(window._focusKey!==playerKey){
+      focusElOnce($('pName'), playerKey);
+    }
+  }
+
+  startTimerLoop();
+
+  box.querySelectorAll('.bidRaise').forEach(btn=>{
+    btn.onclick=()=> doRaise(parseInt(btn.getAttribute('data-target'),10), parseInt(btn.getAttribute('data-inc')||'0',10), false);
+  });
+  wireUltimateBid(b, rules);
+  const q=$('btnQuitLot'); if(q) q.onclick=()=>doQuit();
+  if($('btnExtend')) $('btnExtend').onclick=()=>hostExtend();
+  if($('btnForceSold')) $('btnForceSold').onclick=()=>hostSold();
+  if($('btnForceUnsold')) $('btnForceUnsold').onclick=()=>hostUnsold();
+  if($('btnOnlineOwners')) $('btnOnlineOwners').onclick=()=>showOnlineOwners();
+  if($('btnEndAuction')) $('btnEndAuction').classList.toggle('hidden', !isHost);
+}
+
+function myStatusOut(b){
+  if(!myTeamId||!b.teamStatus) return false;
+  const s=b.teamStatus[myTeamId];
+  return s==='out_quit'||s==='out_timeout';
+}
+
+function recentLineHtml(recent){
+  if(!recent) return '<div class="recent-line" aria-label="Recent result">Recent: —</div>';
+  if(recent.sold){
+    return '<div class="recent-line" aria-label="Recent result"><span class="badge sold">Sold</span> <strong>'+(recent.name||'')+'</strong> / '+(recent.team||'')+' / '+(recent.price||'')+'</div>';
+  }
+  return '<div class="recent-line" aria-label="Recent result"><span class="badge unsold">Unsold</span> <strong>'+(recent.name||'')+'</strong></div>';
+}
+
+function showOnlineOwners(){
+  const panel=$('onlinePanel');
+  if(!panel) return;
+  if(!panel.classList.contains('hidden')){
+    panel.classList.add('hidden');
+    return;
+  }
+  const owners=T.owners||[];
+  const pres=window._lastPresence||T.presence||{};
+  const now=Date.now();
+  let onlineN=0, awayN=0;
+  owners.forEach(o=>{
+    const p=pres[o.uid];
+    if(p && p.lastSeen && (now-p.lastSeen)<20000) onlineN++; else awayN++;
+  });
+  let h='<div class="row" style="justify-content:space-between"><h3 id="onlineH" tabindex="-1" style="margin:0">Owners online</h3>'+
+    '<button type="button" id="btnCloseOnline" class="btn-sec">Close</button></div>'+
+    '<p style="font-weight:700">Online: '+onlineN+' · Away: '+awayN+'</p>';
+  if(!owners.length) h+='<p style="color:var(--muted)">No owners assigned.</p>';
+  owners.forEach(o=>{
+    const p=pres[o.uid];
+    const online=p && p.lastSeen && (now-p.lastSeen)<20000;
+    const ago=p&&p.lastSeen?Math.round((now-p.lastSeen)/1000)+'s ago':'no signal';
+    h+='<div style="padding:8px 0;border-bottom:1px solid var(--border)"><strong>'+(o.displayName||o.email||'')+'</strong><br>'+
+      '<span style="color:var(--muted)">'+(o.email||'')+'</span><br>Team: <strong>'+(o.teamName||'—')+'</strong><br>'+
+      (online?'<span class="badge sold">Online</span>':'<span class="badge unsold">Away ('+ago+')</span>')+'</div>';
+  });
+  h+='<button type="button" id="btnRefreshOnline" class="btn-sec btn-block" style="margin-top:10px">Refresh list</button>';
+  panel.innerHTML=h;
+  panel.classList.remove('hidden');
+  focusEl($('onlineH'));
+  $('btnCloseOnline').onclick=()=>{ panel.classList.add('hidden'); focusEl($('btnOnlineOwners')); };
+  $('btnRefreshOnline').onclick=()=>showOnlineOwners();
+}
+
+function meetButtonHtml(){
+  const url=(T && T.meetLink) ? String(T.meetLink).trim() : '';
+  if(url){
+    return '<a class="btn-ok btn-block" id="btnJoinMeet" style="display:block;text-align:center;text-decoration:none;margin-top:12px" href="'+url.replace(/"/g,'&quot;')+'" target="_blank" rel="noopener" aria-label="Join voice meeting, opens in another app">Join meeting</a>';
+  }
+  return '<button type="button" class="btn-sec btn-block" id="btnJoinMeet" style="margin-top:12px" disabled aria-disabled="true" aria-label="Join meeting unavailable, no link was set">Join meeting</button>';
+}
+
+function startTimerLoop(){
+  stopTimer();
+  timerInterval=setInterval(async()=>{
+    if(!T||!isVirtual()) return;
+    if(T.status==='ended'){ stopTimer(); return; }
+    if(!T.bid) return;
+    const el=$('pTimer');
+    if(T.bid.phase==='await_host'){
+      if(el){ el.textContent='Waiting for host'; el.className='timer-box warn'; }
+      return;
+    }
+    if(!T.bid.timerEndsAt){
+      if(el) el.textContent='—';
+      return;
+    }
+    if(el) updateTimerDisplay(el, T.bid.timerEndsAt, T.bid.phase);
+    const msLeft=Math.max(0,(T.bid.timerEndsAt||0)-Date.now());
+    const sec=Math.ceil(msLeft/1000);
+    // Timer SFX once when entering last 12 seconds
+    if(sec===12 && T.bid && !T.bid._sfxTimer12){
+      T.bid._sfxTimer12=true;
+      playSfx('timer');
+    }
+    if(sec>12 && T.bid) T.bid._sfxTimer12=false;
+    // Countdown announcements 10..1
+    if(sec>=1 && sec<=10){
+      if(window._countdownSec!==sec){
+        window._countdownSec=sec;
+        if(sec===10){
+          showTimerBanner('Timer 10 seconds');
+          sayEvent('Time remaining, 10 seconds.', 'timer');
+        } else {
+          sayEvent(String(sec), 'timer', true);
+        }
+      }
+    } else {
+      window._countdownSec=null;
+    }
+    if(user&&T.ownerId===user.uid && Date.now()>=T.bid.timerEndsAt){
+      await onTimerExpired();
+    }
+  }, 400);
+}
+
+async function onTimerExpired(){
+  if(!T.bid || T.bid._handling) return;
+  if(!user || T.ownerId!==user.uid) return;
+  T.bid._handling=true;
+  try{
+    // No open-window phase — host must choose
+    T.bid.phase='await_host';
+    T.bid.timerEndsAt=null;
+    T.bid._announced10=false;
+    T.bid._sfxTimer12=false;
+    window._countdownSec=null;
+    // Lock non-leader active challenger until extend or quit (keep list for UI)
+    await cloudSave(true);
+    sayEvent('Time up. Waiting for host decision.', 'host');
+    showHostTimerDecision(!!T.bid.leaderTeamId);
+  } finally {
+    if(T&&T.bid) T.bid._handling=false;
+  }
+}
+
+function showHostTimerDecision(hasLeader){
+  const box=$('aucPlayer');
+  if(!box) return;
+  let panel=$('hostDecisionPanel');
+  if(!panel){
+    panel=document.createElement('div');
+    panel.id='hostDecisionPanel';
+    panel.className='panel';
+    panel.style.marginTop='12px';
+    box.appendChild(panel);
+  }
+  const lead=hasLeader?('Lead: '+(T.bid.leaderTeamName||'')+' at '+T.bid.price):'No leading bid';
+  panel.innerHTML=
+    '<h3 id="hostDecH" tabindex="-1">Time ran out</h3>'+
+    '<p role="alert">Time ran out. Extend the timer for other teams, confirm sold, or mark unsold.</p>'+
+    '<p>'+lead+'</p>'+
+    '<p style="color:var(--muted);font-size:14px">Until you extend or a team quits, other teams cannot place new bids.</p>'+
+    '<div class="row">'+
+    '<button type="button" id="decExtend" class="btn-sec">Extend timer for other teams</button>'+
+    (hasLeader?'<button type="button" id="decSold" class="btn-ok">Confirm sold</button>':'')+
+    '<button type="button" id="decUnsold" class="btn-danger">Mark unsold</button></div>';
+  focusEl($('hostDecH'));
+  sayEvent('Time ran out. Host may extend the timer for other teams.', 'host');
+  $('decExtend').onclick=async()=>{
+    const sec=(T.rules&&T.rules.contestSeconds)||30;
+    T.bid.phase='contest';
+    T.bid._announced10=false;
+    T.bid._sfxTimer12=false;
+    window._countdownSec=null;
+    // After extend: free a seat so other teams can bid (leader stays; challenger seat open)
+    if(T.bid.leaderTeamId){
+      T.bid.activeTeamIds=[T.bid.leaderTeamId];
+    } else {
+      T.bid.activeTeamIds=[];
+    }
+    T.bid.timerEndsAt=Date.now()+sec*1000;
+    await cloudSave(true);
+    sayEvent('Time extended. Other teams may bid.', 'host');
+    renderAuction();
+  };
+  if($('decSold')) $('decSold').onclick=()=>hostSold();
+  $('decUnsold').onclick=()=>hostUnsold();
+}
+
+function wireUltimateBid(b, rules){
+  const input=$('ultimateBid');
+  const send=$('btnUltimateSend');
+  if(!input||!send) return;
+
+  function minNeed(){
+    if(b && b.leaderTeamId) return (Number(b.price)||0) + 1;
+    return Number(rules.basePrice)||0;
+  }
+
+  function refresh(){
+    const raw = String(input.value || '').trim();
+    const okDigits = raw.length > 0 && /^[0-9]+$/.test(raw);
+    const val = okDigits ? parseInt(raw, 10) : NaN;
+    const need = minNeed();
+    // Accept only multiples of 5
+    const okStep = okDigits && val % 5 === 0;
+    const ok = okDigits && okStep && val >= need;
+    send.disabled = !ok;
+    send.setAttribute('aria-disabled', ok ? 'false' : 'true');
+  }
+
+  input.oninput = function(){
+    // Keep digits only
+    const cleaned = String(input.value || '').replace(/[^0-9]/g, '');
+    if(input.value !== cleaned) input.value = cleaned;
+    refresh();
+  };
+  input.onkeyup = refresh;
+  input.onchange = refresh;
+
+  send.onclick = function(){
+    refresh();
+    if(send.disabled) return;
+    const val = parseInt(String(input.value).replace(/[^0-9]/g, ''), 10);
+    if(!val) return;
+    // Ultimate: pass target price; skip max-inc via flag
+    doRaise(val, 0, true);
+  };
+
+  refresh();
+}
+
+async function doRaise(targetPrice, inc, isUltimate){
+  if(!ownerMode||!myTeamId||!auctionId) return;
+  if(T && T.status==='ended'){
+    announce('Auction is closed. Bidding is not available.');
+    renderAuction();
+    return;
+  }
+  try{
+    let acceptedPrice=null, acceptedTeam=null;
+    await db.runTransaction(async tx=>{
+      const ref=db.collection('auctions').doc(auctionId);
+      const snap=await tx.get(ref);
+      if(!snap.exists) throw new Error('Auction not found');
+      const data=snap.data();
+      if(data.status==='ended') throw new Error('Auction is closed');
+      const bid=data.bid||{};
+      const rules=data.rules||{};
+      const teams=data.teams||[];
+      const myTeam=teams.find(t=>t.id===myTeamId);
+      if(!myTeam) throw new Error('Your team was not found');
+      if((bid.teamStatus||{})[myTeamId]!=='eligible') throw new Error('You cannot bid on this player');
+      if(bid.leaderTeamId===myTeamId) throw new Error('You already lead');
+      const style=rules.bidStyle||'two';
+      bid.activeTeamIds=bid.activeTeamIds||[];
+      if(style==='two'){
+        if(bid.activeTeamIds.length>=2 && bid.activeTeamIds.indexOf(myTeamId)<0){
+          throw new Error('Only 2 teams can bid at a time. Wait until a team quits or the open window.');
+        }
+      }
+      const newPrice = targetPrice || (bid.leaderTeamId ? (bid.price + (inc||rules.minRaise||10)) : (rules.basePrice||0));
+      if(bid.leaderTeamId && newPrice <= bid.price) throw new Error('Bid too low. Current lead is '+bid.price);
+      if(newPrice > myTeam.remaining) throw new Error('Not enough purse. Remaining: '+myTeam.remaining);
+      const maxInc=rules.maxRaise||999999;
+      if(!isUltimate && bid.leaderTeamId && (newPrice-bid.price)>maxInc) throw new Error('Above maximum increase allowed');
+      if(isUltimate && newPrice % 5 !== 0) throw new Error('Ultimate bid must be a multiple of 5');
+      // Ultimate: still respect max increase unless opening bid
+      bid.price=newPrice;
+      bid.leaderTeamId=myTeamId;
+      bid.leaderTeamName=myTeam.name;
+      if(style==='two' && bid.activeTeamIds.indexOf(myTeamId)<0){
+        bid.activeTeamIds.push(myTeamId);
+      }
+      bid.phase='contest';
+      bid._announced10=false;
+      bid.timerEndsAt=Date.now()+((rules.contestSeconds||30)*1000);
+      acceptedPrice=newPrice;
+      acceptedTeam=myTeam.name;
+      tx.update(ref,{ bid, updatedAt:firebase.firestore.FieldValue.serverTimestamp() });
+    });
+    // Assertive live region — all devices get this via their own snapshot too
+    if(acceptedTeam!=null){
+      window._countdownSec=null;
+      announce(acceptedTeam+' leads at '+acceptedPrice);
+      if(isUltimate){
+        window._lastBidKey = myTeamId+'|'+acceptedPrice+'|'+(T.meta&&T.meta.currentIndex);
+        window._sfxSkipBid=true;
+        playSfx('ultimate');
+        sayEvent(acceptedTeam+' placed ultimate bid of '+acceptedPrice+' and is leading.', 'bid');
+      } else {
+        window._sfxSkipBid=true;
+        playSfx('bid');
+      }
+      // non-ultimate: snapshot announces lead for everyone
+    }
+  }catch(e){
+    const lead = (T && T.bid && T.bid.leaderTeamName)
+      ? (T.bid.leaderTeamName+' leading at '+T.bid.price)
+      : 'no leading team';
+    sayEvent('Your bid is not accepted. '+lead, 'bid');
+    safeAlert(e);
+  }
+}
+
+async function doQuit(){
+  if(!myTeamId||!auctionId) return;
+  ask('Quit this player?','You will not bid again on this player.', async()=>{
+    try{
+      await db.runTransaction(async tx=>{
+        const ref=db.collection('auctions').doc(auctionId);
+        const snap=await tx.get(ref);
+        const bid=snap.data().bid||{};
+        if(bid.leaderTeamId===myTeamId) throw new Error('Leader cannot quit');
+        bid.teamStatus=bid.teamStatus||{};
+        bid.teamStatus[myTeamId]='out_quit';
+        bid.activeTeamIds=(bid.activeTeamIds||[]).filter(id=>id!==myTeamId);
+        // Keep only leader in active so all other eligible teams can see bid buttons
+        if(bid.leaderTeamId){
+          bid.activeTeamIds=[bid.leaderTeamId];
+        }
+        const tname=((snap.data().teams)||[]).find(t=>t.id===myTeamId);
+        bid.lastQuit={ teamId:myTeamId, teamName:(tname&&tname.name)||'A team', at:Date.now(),
+          playerName:(((snap.data().players)||[])[(snap.data().meta||{}).currentIndex||0]||{}).name||'player' };
+        tx.update(ref,{bid, updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      });
+      const pn=(T.players&&T.players[T.meta.currentIndex]&&T.players[T.meta.currentIndex].name)||'this player';
+      const tn=(T.teams.find(t=>t.id===myTeamId)||{}).name||'Your team';
+      sayEvent(tn+' quit from bidding for '+pn+'.', 'bid');
+    }catch(e){ safeAlert(e); }
+  });
+}
+
+async function hostExtend(){
+  if(!T.bid) return;
+  const sec=(T.rules&&T.rules.contestSeconds)||30;
+  T.bid.phase='contest';
+  T.bid._announced10=false;
+  T.bid._sfxTimer12=false;
+  window._countdownSec=null;
+  if(T.bid.leaderTeamId) T.bid.activeTeamIds=[T.bid.leaderTeamId];
+  else T.bid.activeTeamIds=[];
+  T.bid.timerEndsAt=Date.now()+sec*1000;
+  await cloudSave(true);
+  sayEvent('Time extended. Other teams may bid.', 'host');
+  renderAuction();
+}
+
+async function hostSold(){
+  if(!T.bid||!T.bid.leaderTeamId){ alert('No leading team yet'); return; }
+  ask('Confirm sold?','Sell to '+T.bid.leaderTeamName+' for '+T.bid.price+'?', ()=>finalizeSold(T.bid.leaderTeamId, T.bid.price));
+}
+async function hostUnsold(){
+  ask('Mark unsold?','Mark this player unsold and continue?', ()=>finalizeUnsold());
+}
+
+
+function checkTeamAlerts(team){
+  if(!T||!team) return;
+  T.alertRules = T.alertRules || { minPlayers:true, maxPlayers:true, customCounts:[], purse:true, fired:{} };
+  const ar = T.alertRules;
+  ar.fired = ar.fired || {};
+  const tid = team.id;
+  const count = (team.players||[]).length;
+  const minP = team.minPlayers || (T.teams[0]&&T.teams[0].minPlayers) || 0;
+  const maxP = team.maxPlayers || (T.teams[0]&&T.teams[0].maxPlayers) || 0;
+  const purse = team.purse || 0;
+  const remaining = team.remaining != null ? team.remaining : purse;
+  const usedPct = purse > 0 ? Math.round(((purse - remaining) / purse) * 100) : 0;
+
+  function fireOnce(key, msg){
+    if(ar.fired[key]) return;
+    ar.fired[key] = true;
+    sayEvent(msg, 'host');
+  }
+
+  if(ar.minPlayers && minP && count >= minP){
+    fireOnce(tid+'|min|'+minP, team.name+' has bought the minimum of '+minP+' players.');
+  }
+  if(ar.maxPlayers && maxP && count >= maxP){
+    fireOnce(tid+'|max|'+maxP, team.name+' has reached the maximum of '+maxP+' players.');
+  }
+  (ar.customCounts||[]).forEach(n=>{
+    if(count >= n) fireOnce(tid+'|c|'+n, team.name+' has bought '+n+' players.');
+  });
+  if(ar.purse && purse > 0){
+    [50,75,90].forEach(th=>{
+      if(usedPct >= th){
+        fireOnce(tid+'|p|'+th, team.name+' has used '+th+' percent of their purse. Remaining '+remaining+'.');
+      }
+    });
+  }
+}
+
+async function finalizeSold(teamId, price){
+  const idx=T.meta.currentIndex||0;
+  const p=T.players[idx];
+  const team=T.teams.find(t=>t.id===teamId);
+  if(!team){ alert('Team missing'); return; }
+  if(price>team.remaining){ alert('Purse issue'); return; }
+  team.players=team.players||[];
+  team.players.push({...p, price});
+  team.remaining-=price;
+  p.sold=true; p.unsold=false;
+  T.players[idx]=p;
+  T.meta.currentIndex=idx+1;
+  if(T.meta.currentIndex<T.players.length){
+    T.bid=makeBidStateForPlayer(T.meta.currentIndex);
+  } else T.bid=null;
+  try{ checkTeamAlerts(team); }catch(e){}
+  await cloudSave(false);
+  playSfx('sold');
+  window._soldN=(T.players||[]).filter(x=>x.sold).length;
+  sayEvent((p.name||'Player')+' sold to '+team.name+' for '+price, 'host');
+  renderAuction();
+}
+
+async function finalizeUnsold(){
+  const idx=T.meta.currentIndex||0;
+  const p=T.players[idx];
+  p.unsold=true; p.sold=false;
+  T.players[idx]=p;
+  T.meta.currentIndex=idx+1;
+  if(T.meta.currentIndex<T.players.length) T.bid=makeBidStateForPlayer(T.meta.currentIndex);
+  else T.bid=null;
+  await cloudSave(false);
+  announce('Unsold');
+  playSfx('unsold');
+  window._unsoldN=(T.players||[]).filter(x=>x.unsold).length;
+  sayEvent((p.name||'Player')+' unsold.', 'host');
+  renderAuction();
+}
+
+function openSoldForm(idx){
+  const p=T.players[idx];
+  const form=$('soldForm'); form.classList.remove('hidden');
+  let opts=T.teams.filter(t=>!t.maxReached).map(t=>'<option value="'+t.id+'">'+t.name+' · purse '+t.remaining+'</option>').join('');
+  form.innerHTML='<label for="sTeam">Team</label><select id="sTeam">'+opts+'</select><label for="sPrice">Price</label><input id="sPrice" type="text" inputmode="numeric" /><button type="button" id="sSave" class="btn-ok btn-block">Save purchase</button>';
+  focusEl($('sTeam'));
+  $('sSave').onclick=async()=>{
+    const team=T.teams.find(t=>t.id===$('sTeam').value);
+    const price=parseInt(String($('sPrice').value).replace(/\D/g,''),10);
+    if(!team||!price){ alert('Select team and price'); return; }
+    if(price>team.remaining){ alert('Not enough purse'); return; }
+    team.players.push({...p,price}); team.remaining-=price;
+    p.sold=true; p.unsold=false; T.meta.currentIndex=idx+1;
+    await cloudSave(true); renderAuction();
+  };
+}
+
+function renderSquads(){
+  const box=$('sqBody'); box.innerHTML='';
+  if(squadView===null){
+    const grid=document.createElement('div'); grid.className='squad-grid';
+    T.teams.forEach((t,ti)=>{
+      const btn=document.createElement('button'); btn.type='button'; btn.className='squad-card';
+      btn.innerHTML='<p class="sc-name">'+t.name+'</p><p class="sc-sub">'+(t.players||[]).length+' players · Purse left '+t.remaining+'</p>';
+      btn.onclick=()=>{ squadView=ti; renderSquads(); };
+      grid.appendChild(btn);
+    });
+    box.appendChild(grid); focusEl($('sqTitle'));
+  } else {
+    const t=T.teams[squadView];
+    const back=document.createElement('button'); back.type='button'; back.className='btn-sec'; back.textContent='Back to teams';
+    back.onclick=()=>{ squadView=null; renderSquads(); }; box.appendChild(back);
+    const h=document.createElement('h2'); h.id='sqDet'; h.tabIndex=-1; h.textContent=t.name; box.appendChild(h);
+    const ul=document.createElement('ul'); ul.className='plain';
+    (t.players||[]).forEach((pl,pi)=>{
+      const li=document.createElement('li');
+      li.innerHTML='<strong>'+(pl.name||'')+'</strong> · '+pl.price;
+      if(!ownerMode){
+        const row=document.createElement('div'); row.className='row';
+        const ed=document.createElement('button'); ed.type='button'; ed.className='btn-sec'; ed.textContent='Change price';
+        ed.onclick=async()=>{
+          const np=parseInt(prompt('New price', pl.price),10); if(!np) return;
+          const d=np-pl.price; if(d>t.remaining){alert('Not enough purse');return;}
+          t.remaining-=d; pl.price=np; await cloudSave(false); renderSquads();
+        };
+        const rm=document.createElement('button'); rm.type='button'; rm.className='btn-danger'; rm.textContent='Remove';
+        rm.onclick=()=>ask('Remove?','Remove '+pl.name+'?', async()=>{
+          t.remaining+=pl.price; t.players.splice(pi,1);
+          const mp=T.players.find(x=>x.serial===pl.serial&&x.name===pl.name);
+          if(mp){ mp.sold=false; mp.unsold=true; }
+          await cloudSave(false); renderSquads();
+        });
+        row.appendChild(ed); row.appendChild(rm); li.appendChild(row);
+      }
+      ul.appendChild(li);
+    });
+    box.appendChild(ul); focusEl(h);
+  }
+}
+
+document.querySelectorAll('[data-list]').forEach(btn=>{
+  btn.onclick=()=>{
+    toolsKind=btn.getAttribute('data-list');
+    toolsPage=0;
+    renderToolsBook();
+  };
+});
+
+function renderToolsBook(){
+  const pl=T.players||[];
+  let list=pl, title='Players';
+  if(toolsKind==='sold'){ list=pl.filter(p=>p.sold); title='Sold players'; }
+  if(toolsKind==='unsold'){ list=pl.filter(p=>p.unsold); title='Unsold players'; }
+  if(toolsKind==='remaining'){ list=pl.filter(p=>!p.sold&&!p.unsold); title='Upcoming players'; }
+  const pageSize=10;
+  const totalPages=Math.max(1, Math.ceil(list.length/pageSize));
+  if(toolsPage>=totalPages) toolsPage=totalPages-1;
+  if(toolsPage<0) toolsPage=0;
+  const start=toolsPage*pageSize;
+  const slice=list.slice(start, start+pageSize);
+  let h='<div class="row" style="justify-content:space-between;align-items:center">'+
+    '<h2 tabindex="-1" id="tlH" style="margin:0">'+title+'</h2>'+
+    '<button type="button" id="btnCloseList" class="btn-sec">Close list</button></div>'+
+    '<p style="color:var(--muted)">Page '+(toolsPage+1)+' of '+totalPages+' · '+list.length+' total</p>';
+  if(!slice.length){
+    h+='<p>No players in this list.</p>';
+  } else {
+    h+='<ul class="plain">';
+    slice.forEach((p,i)=>{ h+='<li><strong>'+(start+i+1)+'.</strong> '+(p.serial?p.serial+' · ':'')+(p.name||'Unnamed')+'</li>'; });
+    h+='</ul>';
+  }
+  h+='<div class="row" style="margin-top:12px">';
+  h+='<button type="button" id="btnPrevPage" class="btn-sec"'+(toolsPage<=0?' disabled':'')+'>Previous page</button>';
+  h+='<button type="button" id="btnNextPage" class="btn-sec"'+(toolsPage>=totalPages-1?' disabled':'')+'>Next page</button>';
+  h+='</div>';
+  $('toolsList').innerHTML=h;
+  focusEl($('tlH'));
+  announce(title+', page '+(toolsPage+1)+' of '+totalPages);
+  $('btnCloseList').onclick=()=>{ $('toolsList').innerHTML=''; toolsKind=null; focusEl($('toolsTitle')); };
+  $('btnPrevPage').onclick=()=>{ if(toolsPage>0){ toolsPage--; renderToolsBook(); } };
+  $('btnNextPage').onclick=()=>{ if(toolsPage<totalPages-1){ toolsPage++; renderToolsBook(); } };
+}
+
+
+$('btnEndAuction').onclick=()=>ask('End auction?','Move this auction to past?', async()=>{
+  T.status='ended'; await cloudSave(false); stopAuctionLive(); stopTimer();
+  sayEvent('Auctioner has ended this auction. Bidding is no longer accepted.', 'host');
+  enterHome();
+});
+function wireAucQuickSettings(){
+  const btn=$('btnAucQuickSet'), panel=$('aucQuickSetPanel');
+  if(!btn||!panel) return;
+  btn.onclick=()=>{
+    panel.classList.toggle('hidden');
+    if(!panel.classList.contains('hidden')){
+      $('qChkTts').checked=!!(typeof ttsPref!=='undefined'&&ttsPref.on);
+      $('qChkSfx').checked=!!(typeof sfxOn==='undefined'?true:sfxOn);
+      focusEl($('qChkTts')||btn);
+    }
+  };
+  $('qChkTts').onchange=()=>{
+    ttsPref.on=$('qChkTts').checked;
+    saveTtsPref();
+    if(ttsPref.on) sayEvent('Commentary on', null);
+    else ttsStop();
+  };
+  $('qChkSfx').onchange=()=>{
+    sfxOn=$('qChkSfx').checked;
+    saveSfxPref();
+    if(sfxOn){ unlockSfx(); playSfx('bid'); }
+  };
+  $('btnQTestSfx').onclick=()=>{ unlockSfx(); sfxOn=true; $('qChkSfx').checked=true; saveSfxPref(); playSfx('bid'); };
+  $('btnQFullSet').onclick=()=>{ panel.classList.add('hidden'); $('btnSettings').click(); };
+  $('btnQCloseSet').onclick=()=>{ panel.classList.add('hidden'); focusEl(btn); };
+}
+wireAucQuickSettings();
+
+$('btnHomeAuc').onclick=async()=>{
+  if(T && user && T.ownerId===user.uid && T.status==='live' && isVirtual()){
+    ask('Take a break?','Owners will see that the host is on break and bidding will pause.', async()=>{
+      T.paused=true;
+      try{ await cloudSave(false); }catch(e){ safeAlert(e); }
+      stopAuctionLive(); stopTimer(); helperMode=false; ownerMode=false;
+      // Keep T null via enterHome
+      enterHome();
+    });
+    return;
+  }
+  stopAuctionLive(); stopTimer(); helperMode=false; ownerMode=false; enterHome();
+};
+
+$('btnMyAuctions').onclick=async()=>{
+  showScreen('screenList'); $('listTitle').textContent='My auctions'; focusEl($('listTitle'));
+  const body=$('listBody'); body.innerHTML='Loading…';
+  try{
+    const snap=await db.collection('auctions').where('ownerId','==',user.uid).limit(40).get();
+    body.innerHTML='';
+    snap.forEach(doc=>{
+      const it={id:doc.id,...doc.data()};
+      const card=document.createElement('div'); card.className='panel';
+      card.innerHTML='<strong>'+(it.title||'')+'</strong> · '+(it.mode||'physical')+' · '+(it.status||'');
+      const row=document.createElement('div'); row.className='row';
+      const open=document.createElement('button'); open.type='button'; open.className='btn-ok'; open.textContent='Open';
+      open.onclick=()=>resumeAuction(it.id, it);
+      const del=document.createElement('button'); del.type='button'; del.className='btn-danger'; del.textContent='Delete';
+      del.onclick=()=>ask('Delete?','Delete '+(it.title||'')+'?', async()=>{ await db.collection('auctions').doc(it.id).delete(); $('btnMyAuctions').click(); });
+      row.appendChild(open); row.appendChild(del); card.appendChild(row); body.appendChild(card);
+    });
+  }catch(e){ body.innerHTML=e.message||e; }
+};
+
+showScreen('screenAuth');
+focusEl($('authTitle'));
+</script>
+</body>
+</html>
